@@ -1,12 +1,16 @@
 <script>
 	import { onMount } from 'svelte';
+	import { userId } from '../UserState'
+
 	import axios from 'axios'
 	import page from 'page'
 	import moment from 'moment'
+
 	import CharacterLink from '../components/CharacterLink'
-	import { userId } from '../UserState'
 	import LoginList from '../components/LoginList'
 	import AccountLink from '../components/AccountLink'
+	import ActionButtons from '../components/ActionButtons'
+	import ActionModal from '../components/ActionModal.svelte'
 
 	export let pageCtx;
 	export let appAlert;
@@ -22,7 +26,7 @@
 	let email;
 	let account;
 
-	onMount(async () => {
+	async function refresh() {
 		let loadID = params.id || $userId;
 
 		try {
@@ -47,6 +51,10 @@
 				appAlert.message(e.message)
 			}
 		}
+	}
+
+	onMount(async () => {
+		await refresh();
 	});
 </script>
 
@@ -56,6 +64,8 @@
 
 {#if account}
 <h1>Account: <AccountLink account={account}/></h1>
+<ActionButtons {account} />
+
 <form>
 	<div class="form-group row">
 		<label for="staticEmail" class="col-sm-2 col-form-label">Email</label>
@@ -73,7 +83,7 @@
 
 <h2>Characters</h2>
 <p>
-	{#if characters.length > 1}
+	{#if characters.length >= 1}
 	<div class="row">
 	{#each characters as char, i}
 		<div class="col-md-4 col-12"><CharacterLink character={char} /></div>
@@ -90,3 +100,4 @@
 </p>
 {/if}
 
+<ActionModal on:action={refresh} />

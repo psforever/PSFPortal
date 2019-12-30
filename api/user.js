@@ -35,6 +35,7 @@ api.get('/user/:user/profile', async (req, res, next) => {
 			email : "bademail@email.com",
 			account_created : account.created,
 			admin : account.gm,
+			inactive: account.inactive,
 			characters: characters,
 		});
 	} catch (e) {

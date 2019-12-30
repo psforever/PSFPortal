@@ -229,14 +229,10 @@ export async function get_characters(pagination, sort, order) {
 
 	try {
 		const char_count = await get_row_count(CHARACTER.THIS);
-		const chars = await pool.query(`SELECT id, name, faction_id, created, last_login FROM characters ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1 LIMIT $2`, values);
+		const chars = await pool.query(`SELECT id, account_id, name, faction_id, created, last_login FROM characters ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1 LIMIT $2`, values);
 
 		pagination.item_count = char_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
-
-		chars.rows.forEach((r) => {
-			delete r.account_id;
-		});
 
 		return chars.rows;
 	} catch (e) {
@@ -302,8 +298,7 @@ export async function get_stats() {
 	try {
 		const account_count = await get_row_count(ACCOUNT.THIS);
 		const character_count = await get_row_count(CHARACTER.THIS);
-		const last_account = await pool.query('SELECT id, username, created FROM accounts ORDER BY id DESC LIMIT 1');
-		const last_character = await pool.query('SELECT id, name, faction_id, created FROM characters ORDER BY id DESC LIMIT 1');
+		const last_character = await pool.query('SELECT id, account_id, name, faction_id, created FROM characters ORDER BY id DESC LIMIT 1');
 		const empires = await pool.query('SELECT faction_id, COUNT(*) FROM characters GROUP BY faction_id');
 
 		const stats = {}
@@ -311,9 +306,6 @@ export async function get_stats() {
 		stats.characters = character_count;
 		stats.last = {};
 		stats.last.character = last_character.rows[0];
-		stats.last.account = last_account.rows[0];
-		stats.last.account.name = stats.last.account.username
-		delete stats.last.account.username;
 		stats.empires = {};
 
 		empires.rows.forEach((r) =>
@@ -354,7 +346,7 @@ export async function search(term, pagination) {
 		const accounts = await pool.query('SELECT id, username, gm FROM accounts ' +
 			'WHERE upper(username) LIKE $1 '+
 		` ORDER BY username OFFSET $2 LIMIT $3`, values);
-		const characters = await pool.query('SELECT id, name, faction_id FROM characters ' +
+		const characters = await pool.query('SELECT id, name, account_id, faction_id FROM characters ' +
 			'WHERE name LIKE $1 '+
 		` ORDER BY upper(name) OFFSET $2 LIMIT $3`, values);
 
