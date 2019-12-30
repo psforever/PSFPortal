@@ -1,0 +1,59 @@
+{
+  "name": "psfwebui",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A web interface to PSForever servers.",
+  "main": "index.js",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.cjs",
+    "dev": "webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public",
+    "dev-server": "nodemon -w api/ -w index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/psforever/PSFWeb.git"
+  },
+  "author": "PSForever.net",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/psforever/PSFWeb/issues"
+  },
+  "homepage": "https://github.com/psforever/PSFWeb#readme",
+  "dependencies": {
+    "bcrypt": "^3.0.7",
+    "connect-history-api-fallback": "^1.6.0",
+    "connect-pg-simple": "^6.0.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.0",
+    "morgan": "^1.9.1",
+    "page": "^1.11.5",
+    "pg": "^7.15.1",
+    "pg-error-constants": "^1.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.7.3",
+    "axios": "^0.19.0",
+    "bootstrap": "^4.4.1",
+    "cross-env": "^5.2.0",
+    "css-loader": "^2.1.1",
+    "jquery": "^3.4.1",
+    "mini-css-extract-plugin": "^0.6.0",
+    "moment": "^2.24.0",
+    "nodemon": "^2.0.2",
+    "popper.js": "^1.16.0",
+    "postcss-loader": "^3.0.0",
+    "precss": "^4.0.0",
+    "sass": "^1.24.0",
+    "sass-loader": "^8.0.0",
+    "serve": "^11.0.0",
+    "style-loader": "^0.23.1",
+    "svelte": "^3.0.0",
+    "svelte-loader": "2.13.3",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1",
+    "webpack-hot-middleware": "^2.25.0",
+    "webpack-hot-server-middleware": "^0.6.0"
+  }
+}
