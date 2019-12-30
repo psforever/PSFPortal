@@ -405,7 +405,7 @@ export async function validate_account(username, password) {
 			if (await bcrypt.compare(password, creds.passhash) === true) {
 				return creds.id;
 			} else {
-				return creds.id;
+				return undefined;
 			}
 		}
 	} catch (e) {
