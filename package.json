@@ -1,5 +1,5 @@
 {
-  "name": "psfwebui",
+  "name": "psfportal",
   "version": "1.0.0",
   "type": "module",
   "description": "A web interface to PSForever servers.",
