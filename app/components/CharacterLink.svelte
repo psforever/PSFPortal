@@ -13,7 +13,7 @@
 	{/if}
 
 	{#if $isAdmin}
-	<a href="/character/{character.id}">{character.name}</a>
+	<a href="/user/{character.account_id}">{character.name}</a>
 	{:else}
 	<span>{character.name}</span>
 	{/if}

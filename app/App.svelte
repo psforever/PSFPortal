@@ -14,11 +14,10 @@
 import { onMount } from 'svelte';
 import page from 'page';
 
-import { fade } from 'svelte/transition';
 import { get_initial_state } from './UserState.js';
+
 import Nav from './components/Nav.svelte'
 import Alert from './components/Alert.svelte'
-
 import Home from './views/Home.svelte';
 import Login from './views/Login.svelte';
 import Register from './views/Register.svelte';
@@ -28,12 +27,12 @@ import UserList from './views/UserList.svelte';
 import AdminPanel from './views/AdminPanel.svelte';
 import CharacterList from './views/CharacterList.svelte';
 
-// prevent pop-in
+// prevent view pop-in
 let initialized = false;
 
 onMount(async () => {
   await get_initial_state()
-  initialized = true;
+  page() // start the router
 });
 
 let route;
@@ -53,9 +52,18 @@ function setRoute(r, initialState) {
     if (!first)
       previousCtx = currentCtx
 
-    if (!first && currentCtx.route == r)
+    if (!first && ctx.pathname == previousCtx.pageCtx.pathname)
       return
 
+    if (process.env.NODE_ENV !== "production" && !first)  {
+      console.log("-------------------NEW ROUTE--------------\n",
+        previousCtx.pageCtx.pathname, " -> ", ctx.pathname)
+
+      if (previousCtx && r == previousCtx.route)
+        console.log("/!\\ Re-rendering same view with different params")
+    }
+
+    // We are changing views, clear the global app message
     if (appAlert)
       appAlert.message("");
 
@@ -64,10 +72,22 @@ function setRoute(r, initialState) {
     else
       initialized = true;
 
+    // Change the component context
     currentCtx = {
       route : r,
       routeParams : ctx.params,
       pageCtx : ctx,
+    }
+
+    /* If the previous view compoent was the same, we need to
+      force svelte to rerender it if some of the parameters have changed.
+      For example, clicking from another User's view to ourself wont lead
+      to a render due to the component not changing. We force this change
+      by scheduling the two changes on separate ticks.
+    */
+    if (previousCtx && r == previousCtx.route) {
+      setImmediate(() => currentCtx.route = null)
+      setImmediate(() => currentCtx.route = r)
     }
   };
 }
@@ -75,16 +95,16 @@ function setRoute(r, initialState) {
 page("/", setRoute(Home, true));
 page("/login", setRoute(Login, true));
 page("/register", setRoute(Register));
-page("/register", setRoute(Register));
+page("/admin", setRoute(AdminPanel));
+page("/profile", setRoute(Profile, true));
+page("/user/:id", setRoute(Profile, true));
 //page("/users", setRoute(UserList));
 //page("/characters", setRoute(CharacterList));
-page("/admin", setRoute(AdminPanel));
 //page("/recovery", setRoute(Recovery));
-page("/profile", setRoute(Profile, true));
 page("*", setRoute(BadRoute));
-page()
 </script>
 
+{#if currentCtx}
 <Nav bind:route={currentCtx.pageCtx.pathname}/>
 
 <main role="main" class="container">
@@ -104,3 +124,4 @@ All other trademarks or tradenames are properties of their respective owners.
     </span>
   </div>
 </footer>
+{/if}

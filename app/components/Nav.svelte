@@ -2,8 +2,6 @@
 	import { get_initial_state, logout, isAdmin, loggedIn, username } from '../UserState.js';
 	import axios from 'axios'
 	export let route;
-	export let pageCtx;
-	console.log(pageCtx)
 </script>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">

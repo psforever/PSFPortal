@@ -16,6 +16,13 @@ export function get_pagination(req) {
 }
 
 export async function fetch_user_middleware(req, res, next, id) {
+	id = parseInt(id);
+
+	if (id <= 0) {
+		res.status(500).json({message: 'error'});
+		return;
+	}
+
 	try {
 		const account = await db.get_account_by_id(id);
 

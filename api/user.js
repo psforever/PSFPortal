@@ -16,10 +16,17 @@ api.get('/user', async (req, res, next) => {
 	}
 });
 
-api.get('/user/profile', async (req, res, next) => {
+api.get('/user/:user/profile', async (req, res, next) => {
+	const target_account = req.user;
+
+	if (target_account.id !== req.session.account_id && !req.session_account.gm) {
+		res.status(403).json({ message: 'not allowed to see for other users' });
+		return;
+	}
+
 	try {
-		const account = await db.get_account_by_id(req.session.account_id);
-		const characters = await db.get_characters_by_account(req.session.account_id);
+		const account = await db.get_account_by_id(target_account.id);
+		const characters = await db.get_characters_by_account(target_account.id);
 
 		res.status(200).json({
 			id : account.id,
@@ -36,19 +43,17 @@ api.get('/user/profile', async (req, res, next) => {
 	}
 });
 
-
 api.get('/user/:user/logins', async (req, res, next) => {
 	const account = req.user;
 	const pagination = get_pagination(req);
 
-	if (account.id !== req.session.account_id) {
+	if (account.id !== req.session.account_id && !req.session_account.gm) {
 		res.status(403).json({ message: 'not allowed to see for other users' });
 		return;
 	}
 
 	try {
 		const logins = await db.get_account_logins(account.id, pagination)
-		console.log(logins)
 		res.status(200).json({ logins : logins, page: pagination});
 	} catch (e) {
 		console.log(e)

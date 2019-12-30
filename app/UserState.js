@@ -24,9 +24,11 @@ export async function logout() {
 	page("/")
 }
 
-loggedIn.subscribe((v) => {
-	console.log(loggedIn, v)
-})
+if (process.env.NODE_ENV !== "production") {
+	loggedIn.subscribe((v) => {
+		console.log("Login state: ", v)
+	})
+}
 
 export async function get_initial_state() {
 	try {
@@ -42,7 +44,6 @@ export async function get_initial_state() {
 		if (e.response.status === 403) {
 			console.log("User not logged in / not admin!")
 			clear_user_state();
-			return false;
 		} else {
 			console.log("Unknown login error", e)
 		}

@@ -4,9 +4,15 @@
 	import page from 'page'
 	import moment from 'moment'
 	import CharacterLink from '../components/CharacterLink'
+	import { userId } from '../UserState'
 	import LoginList from '../components/LoginList'
+	import AccountLink from '../components/AccountLink'
 
+	export let pageCtx;
+	export let appAlert;
+	export let params;
 	export let ready;
+
 	ready = false;
 
 	let username;
@@ -17,8 +23,10 @@
 	let account;
 
 	onMount(async () => {
+		let loadID = params.id || $userId;
+
 		try {
-			const resp = await axios.get("/api/user/profile")
+			const resp = await axios.get("/api/user/"+loadID+"/profile")
 			account = resp.data;
 			username = resp.data.name;
 			characters = resp.data.characters;
@@ -30,7 +38,13 @@
 			ready = true
 		} catch (e) {
 			if (e.response && e.response.status == 403) {
-				page("/login?redirect=/profile")
+				if (e.response.data.message == "session required") {
+					page("/login?redirect="+pageCtx.pathname)
+				} else {
+					appAlert.message(e.response.data.message)
+				}
+			} else {
+				appAlert.message(e.message)
 			}
 		}
 	});
@@ -40,17 +54,9 @@
 <title>PSForever - Profile</title>
 </svelte:head>
 
-<h1>Your Account</h1>
+{#if account}
+<h1>Account: <AccountLink account={account}/></h1>
 <form>
-	{#if isAdmin}
-	<strong class="color-red">You are a GM.</strong>
-	{/if}
-	<div class="form-group row">
-		<label for="staticUsername" class="col-sm-2 col-form-label">Username</label>
-		<div class="col-sm-10">
-			<input type="text" readonly class="form-control-plaintext" id="staticUsername" bind:value={username}>
-		</div>
-	</div>
 	<div class="form-group row">
 		<label for="staticEmail" class="col-sm-2 col-form-label">Email</label>
 		<div class="col-sm-10">
@@ -66,17 +72,21 @@
 </form>
 
 <h2>Characters</h2>
-{#if characters.length > 1}
-<div class="row">
-{#each characters as char, i}
-	<div class="col-md-4 col-12"><CharacterLink character={char} /></div>
-{/each}
-</div>
-{:else}
-<p>You have no characters</p>
-{/if}
+<p>
+	{#if characters.length > 1}
+	<div class="row">
+	{#each characters as char, i}
+		<div class="col-md-4 col-12"><CharacterLink character={char} /></div>
+	{/each}
+	</div>
+	{:else}
+	You have no characters
+	{/if}
+</p>
 
 <h2>Logins</h2>
-{#if account}
+<p>
 <LoginList account_id={account.id} />
+</p>
 {/if}
+

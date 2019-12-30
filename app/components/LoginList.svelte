@@ -21,15 +21,26 @@
 </script>
 
 <PaginatedList {fetch} let:data={logins} let:pagination={pagination}>
+	<p slot="header">
+	{#if pagination.item_count}
+	Login data
+	{:else}
+	No logins yet
+	{/if}
+	</p>
 	<table slot="body" class="table table-dark table-responsive">
 	  <thead>
-		<td>Login Time</td>
+		<td>From</td>
+		<td>Login Date</td>
 	  </thead>
 
 	  <tbody>
 	  {#each logins as login, i}
 		<tr>
-			<td>{moment(login.login_time).fromNow()}</td>
+			<td>
+				<code>{login.hostname} - {login.ip_address}</code>
+			</td>
+			<td>{moment(login.login_time).format('MMMM Do YYYY, h:mm:ss a')} ({moment(login.login_time).fromNow()})</td>
 		</tr>
 	  {/each}
 	  </tbody>

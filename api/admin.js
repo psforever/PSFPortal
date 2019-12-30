@@ -47,7 +47,7 @@ api.post('/user/:user/add_gm', async (req, res, next) => {
 	const account = req.user;
 
 	try {
-		await db.update_account(account.id, {"gm" : true})
+		await db.update_account(account.id, {[db.ACCOUNT.ADMIN] : true})
 		res.status(200).json({});
 	} catch(e) {
 		console.log(e);
@@ -59,7 +59,7 @@ api.post('/user/:user/remove_gm', async (req, res, next) => {
 	const account = req.user;
 
 	try {
-		await db.update_account(account.id, {"gm" : false})
+		await db.update_account(account.id, {[db.ACCOUNT.ADMIN] : false})
 		res.status(200).json({});
 	} catch(e) {
 		console.log(e);
@@ -72,7 +72,7 @@ api.post('/user/:user/ban', async (req, res, next) => {
 
 	try {
 		// also drop GM if they had it...
-		await db.update_account(account.id, {"inactive" : true, "gm" : false})
+		await db.update_account(account.id, {[db.ACCOUNT.BANNED] : true, [db.ACCOUNT.ADMIN] : false})
 		res.status(200).json({});
 	} catch(e) {
 		console.log(e);
@@ -84,10 +84,9 @@ api.post('/user/:user/unban', async (req, res, next) => {
 	const account = req.user;
 
 	try {
-		await db.update_account(account.id, {"inactive" : false})
+		await db.update_account(account.id, {[db.ACCOUNT.BANNED] : false})
 		res.status(200).json({});
 	} catch(e) {
-		console.log(e);
 		res.status(500).json({ message: 'error' });
 	}
 

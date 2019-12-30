@@ -4,6 +4,7 @@
 	import { cubicOut } from 'svelte/easing';
 
 	const progress = tweened(0, {
+		delay: 100,
 		duration: 1000,
 		easing: cubicOut
 	});
@@ -16,21 +17,22 @@
 	let tr, nc, vs;
 
 	onMount(() => {
-		setTimeout(() => progress.set(1.0), 100);
-
 		tr.style.height = "1px";
 		nc.style.height = "1px";
 		vs.style.height = "1px";
+
+		progress.subscribe((v) => {
+			if (!tr || !nc || !vs)
+				return;
+
+			tr.style.height = v*percentages.TR*200 + "px";
+			nc.style.height = v*percentages.NC*200 + "px";
+			vs.style.height = v*percentages.VS*200 + "px";
+		})
+
+		setTimeout(() => progress.set(1.0), 100);
 	})
 
-	progress.subscribe((v) => {
-		if (tr === undefined || !tr.style)
-			return
-
-		tr.style.height = v*percentages.TR*200 + "px";
-		nc.style.height = v*percentages.NC*200 + "px";
-		vs.style.height = v*percentages.VS*200 + "px";
-	})
 </script>
 
 <style>

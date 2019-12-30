@@ -56,13 +56,59 @@ export const CHARACTER = Object.freeze({
     DELETED: Symbol("deleted"),
 });
 
+export const LOGIN = Object.freeze({
+    THIS:  Symbol("logins"),
+    ID:  Symbol("id"),
+    ACCOUNT_ID:  Symbol("account_id"),
+});
+
 function to_sql(symbol) {
 	assert(typeof symbol == 'symbol')
 	return String(symbol).slice(7,-1);
 }
 
-async function get_row_count(table) {
-	const resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)}`);
+function to_sql_kv(fields, idx=1) {
+	let SQL = [];
+	let values = [];
+
+	// This will ONLY get Symbols in the field dict
+	assert(Object.getOwnPropertySymbols(fields).length > 0, "to_sql_kv must have at least one field")
+
+	Object.getOwnPropertySymbols(fields).forEach(key => {
+		assert(typeof key == 'symbol')
+		SQL.push(to_sql(key)+"=$"+idx++);
+		values.push(fields[key]);
+	});
+
+	return {
+		sql: SQL,
+		next_idx: idx,
+		values: values,
+	}
+}
+
+function build_SET(fields, idx=1) {
+	const kv = to_sql_kv(fields, idx);
+	kv.sql = Symbol(kv.sql.join(", "));
+	return kv;
+}
+
+function build_WHERE(fields, idx=1) {
+	const kv = to_sql_kv(fields, idx);
+	kv.sql = Symbol(kv.sql.join(" AND "));
+	return kv;
+}
+
+async function get_row_count(table, filter=undefined) {
+	let resp;
+
+	if (filter) {
+		const where = build_WHERE(filter);
+		resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)} WHERE ${to_sql(where.sql)}`,
+		where.values);
+	} else {
+		resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)}`);
+	}
 	return parseInt(resp.rows[0].count);
 }
 
@@ -70,6 +116,13 @@ export async function connect_to_db() {
 	pool = new pg.Pool()
 	try {
 		const res = await pool.query('SELECT NOW()')
+
+		// Quick hack for query debugging (throws exception)
+		const _query = pool.query;
+		pool.query_log = (q, v) => {
+			console.log("QUERY LOG: ", q, v);
+			return _query(q, v);
+		}
 		console.log(`Connected to the psql database at ${process.env.PGHOST}`)
 	} catch (e) {
 		console.log("Unable to connect to the database: " + e.message);
@@ -80,9 +133,14 @@ export async function connect_to_db() {
 export async function get_account_by_id(id) {
 	try {
 		const account = await pool.query('SELECT * FROM accounts WHERE id=$1', [id]);
-		const account_obj = account.rows[0];
 
+		if (account.rows.length == 0) {
+			return undefined;
+		}
+
+		const account_obj = account.rows[0];
 		delete account_obj.passhash;
+
 		return account_obj;
 	} catch (e) {
 		throw e;
@@ -222,29 +280,16 @@ export async function create_account(username, password) {
 	}
 }
 
-function build_set(fields, idx=1) {
-	let SQL = []
-	let values = []
-
-	// TODO: sort for consistency
-	Object.keys(fields).forEach(key => {
-		SQL.push(key+"=$"+idx++)
-		values.push(fields[key])
-	});
-
-	return [SQL.join(", "), idx, values]
-}
-
 export async function update_account(account_id, fields) {
 	if (fields === {}) {
 		return
 	}
 
-	const set = build_set(fields);
-	set[2].push(account_id)
+	const set = build_SET(fields);
+	set.values.push(account_id)
 
 	try {
-		const update_result = await pool.query('UPDATE accounts SET ' + set[0] + ' WHERE id=$'+set[1],set[2]);
+		const update_result = await pool.query(`UPDATE accounts SET ${to_sql(set.sql)} WHERE id=$${set.next_idx}`, set.values);
 		return update_result.rowCount;
 	} catch (e) {
 		if (e.code)
@@ -287,9 +332,10 @@ export async function get_account_logins(account_id, pagination) {
 	const values = [account_id, start_id, pagination.items_per_page];
 
 	try {
-		const logins = await pool.query('SELECT * FROM logins WHERE account_id=$1 ORDER by login_time DESC ' +
-		` OFFSET $2 LIMIT $3`, values);
-		pagination.item_count = 100;
+		const login_count = await get_row_count(LOGIN.THIS, { [LOGIN.ACCOUNT_ID] : account_id });
+		const logins = await pool.query('SELECT * FROM logins WHERE account_id=$1 ORDER by login_time DESC ' + ` OFFSET $2 LIMIT $3`, values);
+
+		pagination.item_count = login_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
 
 		return logins.rows;

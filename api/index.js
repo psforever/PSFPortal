@@ -21,13 +21,6 @@ async function sessionRequired(req, res, next) {
 	if (!req.session || !req.session.account_id) {
 		res.status(403).json({message: 'session required'})
 	} else {
-		next();
-	}
-}
-async function adminRequired(req, res, next) {
-	if (!req.session || !req.session.account_id) {
-		res.status(403).json({message: 'admin required'})
-	} else {
 		try {
 			const account = await db.get_account_by_id(req.session.account_id);
 
@@ -35,15 +28,24 @@ async function adminRequired(req, res, next) {
 				console.log("ERROR: failed to lookup account from session!")
 				res.status(500).json({message: 'error'});
 			} else {
-				if (account.gm === true && account.inactive === false) {
-					next();
-				} else {
-					res.status(403).json({message : 'admin required'})
-				}
+				req.session_account = account;
+				next();
 			}
 		} catch (e) {
 			console.log(e)
 			res.status(500).json({message: 'error'});
+		}
+	}
+}
+async function adminRequired(req, res, next) {
+	if (!req.session_account) {
+		console.log("ERROR: sessionRequired needs to be called before adminRequired")
+		res.status(500).json({message: ''})
+	} else {
+		if (req.session_account.gm === true && req.session_account.inactive === false) {
+			next();
+		} else {
+			res.status(403).json({message : 'admin required'})
 		}
 	}
 }
@@ -54,7 +56,7 @@ api.use(bodyParser.urlencoded({ extended: true }));
 api.use(api_auth)
 api.use(api_info)
 api.use(sessionRequired, api_user)
-api.use(adminRequired, api_admin)
+api.use(sessionRequired, adminRequired, api_admin)
 
 api.post("/bad_route", async (req, res, next) => {
 	console.log("BAD APP ROUTE:", req.body.route)
