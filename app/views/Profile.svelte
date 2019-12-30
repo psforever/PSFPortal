@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { userId } from '../UserState'
+	import { userId, isAdmin } from '../UserState'
 
 	import axios from 'axios'
 	import page from 'page'
@@ -22,7 +22,6 @@
 	let username;
 	let characters = [];
 	let createDate;
-	let isAdmin;
 	let email;
 	let account;
 
@@ -36,7 +35,6 @@
 			characters = resp.data.characters;
 			createDate = moment(resp.data.account_created).format('MMMM Do YYYY, h:mm:ss a')
 			+ " (" + moment(resp.data.account_created).fromNow() + ")";
-			isAdmin = resp.data.admin;
 			email = resp.data.email;
 
 			ready = true
@@ -64,7 +62,9 @@
 
 {#if account}
 <h1>Account: <AccountLink account={account}/></h1>
+{#if $isAdmin}
 <ActionButtons {account} />
+{/if}
 
 <form>
 	<div class="form-group row">
