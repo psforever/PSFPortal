@@ -7,7 +7,10 @@ api.post('/register', async (req, res, next) => {
 	const rUsername = req.body.username;
 	const rPassword = req.body.password;
 	const rEmail = req.body.email; // TODO: validate email regex
+
 	// TODO: recaptcha, csrf protection
+	res.status(403).json({message: "Registration is disabled"});
+	return;
 
 	if (!rUsername || !rPassword || !rEmail) {
 		res.status(400).json({message: "missing fields"});

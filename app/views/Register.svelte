@@ -50,6 +50,8 @@
 					alert.message("Unknown server error. Contact an administrator if this persists.")
 				} else if (e.response.status === 400) {
 					alert.message(e.response.data.message)
+				} else if (e.response.status === 403) {
+					alert.message(e.response.data.message)
 				} else {
 					alert.message("Unknown server error status");
 				}

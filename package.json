@@ -7,7 +7,8 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --config webpack.config.cjs",
     "dev": "webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public",
-    "dev-server": "nodemon -w api/ -w index.js"
+    "dev-server": "nodemon -w api/ -w index.js",
+    "production": "npm run build && node index.js"
   },
   "repository": {
     "type": "git",
