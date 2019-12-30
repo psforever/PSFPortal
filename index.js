@@ -29,6 +29,13 @@ const app = express();
 // apache logging on web requests
 if (MODE !== 'production') {
 	app.use(morgan('dev'));
+} else {
+	app.use(morgan('combined'));
+}
+
+if (process.env.TRUST_PROXY) {
+	console.log("Trusting proxy")
+	app.set('trust proxy', 'loopback')
 }
 
 // TODO: recaptcha
@@ -62,18 +69,6 @@ if (MODE !== 'production') {
 
 	// All API requests have a session. Other requests are static
 	app.use("/api", sessionMiddleware, api);
-
-	/*if (MODE === 'development') {
-		const webpack = await import('webpack')
-		const middleware = await import('webpack-dev-middleware')
-		const config = await import('./webpack.config.cjs')
-		const hot_webpack = await import('webpack-hot-middleware')
-		const hot_server_webpack = await import('webpack-hot-server-middleware')
-		const compiler = webpack.default(config.default)
-		app.use(middleware.default(compiler))
-		app.use(hot_webpack.default(compiler))
-		app.use(hot_server_webpack.default(compiler))
-	}*/
 
 	// TODO: inject csrf token into meta of index.html
 	app.use(express.static('public'));
