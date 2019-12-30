@@ -50,6 +50,11 @@
 		<button type="submit" class="btn btn-primary mb-2">Search</button>
 	  </form>
 	  {#if results}
+	  {#if results.length > 0}
+	  <p>{results.length} results found.</p>
+	  {:else}
+	  <p>No results found.</p>
+	  {/if}
 	  <ol>
 	  {#each results as result, i}
 		  {#if result.type == "account"}

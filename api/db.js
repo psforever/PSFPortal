@@ -340,6 +340,13 @@ export async function get_account_logins(account_id, pagination) {
 
 export async function search(term, pagination) {
 	const start_id = (pagination.page-1)*pagination.items_per_page;
+
+	term = term.replace(/%/g, "");
+
+	if (term.length < 3) {
+		return [];
+	}
+
 	const values = ['%'+term.toUpperCase()+'%', start_id, pagination.items_per_page];
 
 	try {
@@ -347,8 +354,8 @@ export async function search(term, pagination) {
 			'WHERE upper(username) LIKE $1 '+
 		` ORDER BY username OFFSET $2 LIMIT $3`, values);
 		const characters = await pool.query('SELECT id, name, account_id, faction_id FROM characters ' +
-			'WHERE name LIKE $1 '+
-		` ORDER BY upper(name) OFFSET $2 LIMIT $3`, values);
+			'WHERE upper(name) LIKE $1 '+
+		` ORDER BY name OFFSET $2 LIMIT $3`, values);
 
 		pagination.item_count = 100;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
