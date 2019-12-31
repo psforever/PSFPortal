@@ -20,9 +20,7 @@
 		}
 	}
 
-        onMount(() => monitor_tabs((tab) => {
-          console.log(tab);
-        }));
+        onMount(() => monitor_tabs());
 </script>
 
 <svelte:head>

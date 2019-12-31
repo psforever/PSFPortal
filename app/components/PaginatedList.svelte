@@ -19,11 +19,10 @@
 		const url = new URL(window.location.href)
 		let initialPage = 1;
 
-          console.log(setURLParam, URLSearchName)
 		if (setURLParam) {
 			let param = parseInt(url.searchParams.get(URLSearchName))
 
-			if (param != NaN)
+			if (!isNaN(param))
 				initialPage = param;
 		}
 
