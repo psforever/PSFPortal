@@ -100,4 +100,4 @@
 </p>
 {/if}
 
-<ActionModal on:action={refresh} />
+<ActionModal on:action={() => refresh()} />

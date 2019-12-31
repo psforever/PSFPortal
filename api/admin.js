@@ -1,6 +1,6 @@
 import express from 'express'
 import * as db from './db.js'
-import { get_pagination, fetch_user_middleware } from './util.js'
+import { get_pagination, get_filter, get_sort, fetch_user_middleware } from './util.js'
 
 const api = express.Router();
 
@@ -8,9 +8,32 @@ api.param("user", fetch_user_middleware);
 
 api.get('/users', async (req, res, next) => {
 	const pagination = get_pagination(req);
+	const filter = get_filter(req,
+		{
+			param : 'filter',
+			default : 'all',
+			types : {
+				'gm' : { [db.ACCOUNT.ADMIN] : true },
+				'banned' : { [db.ACCOUNT.BANNED] : true },
+			}
+		}
+	);
+
+	const sort = get_sort(req,
+		{
+			param : 'sort',
+			default : 'created_desc',
+			types : {
+				'id' : db.ACCOUNT.ID,
+				'created' : db.ACCOUNT.CREATED,
+				'username' : db.ACCOUNT.USER,
+				'last_login' : db.ACCOUNT.LAST_LOGIN,
+			}
+		}
+	);
 
 	try {
-		const accounts = await db.get_accounts_login_info(pagination, db.ACCOUNT.CREATED, db.SQL_ORDER.DESCENDING);
+		const accounts = await db.get_accounts_login_info(pagination, sort, filter);
 		res.status(200).json({ users: accounts, page: pagination})
 	} catch (e) {
 		console.log(e)

@@ -11,8 +11,11 @@
 	let fetching = false;
 	let pagination = { page: 1 };
 
-	export async function refresh() {
-		await list_fetch(pagination.page)
+	export async function refresh(newpage) {
+		if (newpage !== undefined && typeof newpage == "number")
+			await list_fetch(newpage)
+		else
+			await list_fetch(pagination.page)
 	}
 
 	onMount(async () => {

@@ -79,3 +79,27 @@ button:focus {
 .form-control-plaintext {
 	color: white;
 }
+
+table thead {
+	// Stolen from https://github.com/wenzhixin/bootstrap-table/blob/develop/src/themes/_theme.scss#L103
+	.sortable {
+	  cursor: pointer;
+	  background-position: right;
+	  background-repeat: no-repeat;
+	  padding-right: 30px !important;
+	}
+
+	.both {
+	  // This was too light...
+	  //background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAQAAADYWf5HAAAAkElEQVQoz7X QMQ5AQBCF4dWQSJxC5wwax1Cq1e7BAdxD5SL+Tq/QCM1oNiJidwox0355mXnG/DrEtIQ6azioNZQxI0ykPhTQIwhCR+BmBYtlK7kLJYwWCcJA9M4qdrZrd8pPjZWPtOqdRQy320YSV17OatFC4euts6z39GYMKRPCTKY9UnPQ6P+GtMRfGtPnBCiqhAeJPmkqAAAAAElFTkSuQmCC');
+	  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAQAAADYWf5HAAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfjDB8SGB+BP4v2AAAAzklEQVQoz2NgoCmYyFUyYSIbuigTusCr7KtZb1IJKOvSupX3j/VOQbcyHmUTGZ8Vf5JhYHin8jJvIiNOZV8dHgRCWLcSv1njUNbHe7/2uyCE/ZP3Qc1EdqzKPoY8tWb5AYOPHT8EkRxMSA5tjDy5gPEfjPefyTSjcT4WSwXWye7/wwGD0kf512B1W/5PhRb2zxA253vF5qLPOAKE66ga1BqF9dwHcIZb/n/xSUJ3GBj4nkj15v/H66fabM9f1aXooizoAiKztVXFptI2FQIAo85H84//KTgAAAAASUVORK5CYII=');
+	}
+
+	.asc {
+	  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAZ0lEQVQ4y2NgGLKgquEuFxBPAGI2ahhWCsS/gDibUoO0gPgxEP8H4ttArEyuQYxAPBdqEAxPBImTY5gjEL9DM+wTENuQahAvEO9DMwiGdwAxOymGJQLxTyD+jgWDxCMZRsEoGAVoAADeemwtPcZI2wAAAABJRU5ErkJggg==');
+	}
+
+	.desc {
+	  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAATCAYAAAByUDbMAAAAZUlEQVQ4y2NgGAWjYBSggaqGu5FA/BOIv2PBIPFEUgxjB+IdQPwfC94HxLykus4GiD+hGfQOiB3J8SojEE9EM2wuSJzcsFMG4ttQgx4DsRalkZENxL+AuJQaMcsGxBOAmGvopk8AVz1sLZgg0bsAAAAASUVORK5CYII= ');
+	}
+}

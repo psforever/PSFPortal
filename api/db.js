@@ -39,6 +39,9 @@ export const ACCOUNT = Object.freeze({
     MODIFIED: Symbol("last_modified"),
     BANNED: Symbol("inactive"),
     ADMIN: Symbol("gm"),
+
+	// A derived table column
+    LAST_LOGIN: Symbol("last_login"),
 });
 
 export const CHARACTER = Object.freeze({
@@ -63,7 +66,8 @@ export const LOGIN = Object.freeze({
 });
 
 function to_sql(symbol) {
-	assert(typeof symbol == 'symbol')
+	assert(typeof symbol == 'symbol',
+		`symbol expected got ${typeof symbol}`)
 	return String(symbol).slice(7,-1);
 }
 
@@ -72,7 +76,9 @@ function to_sql_kv(fields, idx=1) {
 	let values = [];
 
 	// This will ONLY get Symbols in the field dict
-	assert(Object.getOwnPropertySymbols(fields).length > 0, "to_sql_kv must have at least one field")
+	if (!fields || Object.getOwnPropertySymbols(fields).length == 0) {
+		return { sql : [], next_idx: idx, values: [] }
+	}
 
 	Object.getOwnPropertySymbols(fields).forEach(key => {
 		assert(typeof key == 'symbol')
@@ -89,14 +95,56 @@ function to_sql_kv(fields, idx=1) {
 
 function build_SET(fields, idx=1) {
 	const kv = to_sql_kv(fields, idx);
-	kv.sql = Symbol(kv.sql.join(", "));
+
+	assert(kv.sql.length > 0, "SET MUST have at least one kv pair")
+
+	kv.sql = Symbol(`SET ${kv.sql.join(", ")}`);
+
 	return kv;
 }
 
-function build_WHERE(fields, idx=1) {
-	const kv = to_sql_kv(fields, idx);
-	kv.sql = Symbol(kv.sql.join(" AND "));
+function build_WHERE(filter, idx=1) {
+	const kv = to_sql_kv(filter.fields, idx);
+
+	if (kv.sql.length > 1) {
+		assert(filter.binop !== undefined,
+			"binary operand required in WHERE with multiple terms")
+		const binop = filter.binop == "AND" ? Symbol("AND") : Symbol("OR");
+		kv.sql = Symbol(`WHERE ${kv.sql.join(` ${to_sql(binop)} `)}`);
+	} else if (kv.sql.length == 1)
+		kv.sql = Symbol(`WHERE ${kv.sql[0]}`);
+	else
+		kv.sql = Symbol("")
+
 	return kv;
+}
+
+function build_ORDER_BY(sort) {
+	// This will ONLY get Symbols in the sort dict
+	if (!sort || Object.getOwnPropertySymbols(sort).length == 0) {
+		return Symbol("");
+	}
+
+	let SQL = []
+	Object.getOwnPropertySymbols(sort).forEach(key => {
+		const value = sort[key];
+		assert(typeof key == 'symbol')
+		assert(typeof value == 'symbol')
+		SQL.push(`${to_sql(key)} ${to_sql(value)}`);
+	});
+
+	return Symbol(`ORDER BY ${SQL.join(", ")}`);
+}
+
+function build_OFFSET(offset, limit, idx=1) {
+	assert(typeof offset == 'number', "offset must be a number");
+	assert(typeof limit == 'number', "limit must be a number");
+
+	return {
+		sql: Symbol(`OFFSET $${idx++} LIMIT $${idx++}`),
+		next_idx: idx,
+		values: [offset, limit],
+	};
 }
 
 async function get_row_count(table, filter=undefined) {
@@ -104,7 +152,7 @@ async function get_row_count(table, filter=undefined) {
 
 	if (filter) {
 		const where = build_WHERE(filter);
-		resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)} WHERE ${to_sql(where.sql)}`,
+		resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)} ${to_sql(where.sql)}`,
 		where.values);
 	} else {
 		resp = await pool.query(`SELECT COUNT(*) FROM ${to_sql(table)}`);
@@ -171,17 +219,21 @@ export async function get_accounts(pagination, sort, order) {
 	}
 }
 
-export async function get_accounts_login_info(pagination, sort, order) {
+export async function get_accounts_login_info(pagination, sort, filter) {
 	const start_id = (pagination.page-1)*pagination.items_per_page;
 	const values = [start_id, pagination.items_per_page];
 
 	try {
-		const account_count = await get_row_count(ACCOUNT.THIS);
+		const account_count = await get_row_count(ACCOUNT.THIS, filter);
+		const where = build_WHERE(filter);
+		const offset = build_OFFSET(start_id, pagination.items_per_page, where.next_idx);
+		const values = [].concat(where.values, offset.values);
+		const order = build_ORDER_BY(sort);
 
 		// this was a really hard query to get right...
 		// https://www.gab.lc/articles/better_faster_subqueries_postgresql/
 		const accounts = await pool.query(
-		'SELECT accounts.*, lastLogin as login_time, l2.ip_address, l2.canonical_hostname FROM accounts' +
+		'SELECT accounts.*, COALESCE(l.lastLogin, TIMESTAMP \'epoch\') as last_login, l2.ip_address, l2.canonical_hostname FROM accounts' +
 		' LEFT OUTER JOIN (' +
 		'   SELECT MAX(id) as loginId, account_id, MAX(login_time) as lastLogin' +
 		'   FROM logins' +
@@ -189,7 +241,9 @@ export async function get_accounts_login_info(pagination, sort, order) {
 		' ) l ON l.account_id = accounts.id' +
 		' LEFT OUTER JOIN logins l2' +
 		' ON l2.id = l.loginId' +
-		` ORDER BY COALESCE(l.lastLogin, TIMESTAMP \'epoch\') ${to_sql(order)} OFFSET $1 LIMIT $2`, values);
+		` ${to_sql(where.sql)}` +
+		` ${to_sql(order)}` +
+		` ${to_sql(offset.sql)}`, values);
 
 		pagination.item_count = account_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
@@ -198,9 +252,9 @@ export async function get_accounts_login_info(pagination, sort, order) {
 			r.name = r.username;
 			r.admin = r.gm;
 
-			if (r.login_time !== null) {
+			if (r.ip_address !== null) {
 				r.last_login = {
-					time : r.login_time,
+					time : r.last_login,
 					hostname : r.canonical_hostname,
 					ip : r.ip_address,
 				}
@@ -208,7 +262,6 @@ export async function get_accounts_login_info(pagination, sort, order) {
 				r.last_login = {}
 			}
 
-			delete r.login_time;
 			delete r.canonical_hostname;
 			delete r.ip_address;
 			delete r.passhash;
@@ -285,7 +338,7 @@ export async function update_account(account_id, fields) {
 	set.values.push(account_id)
 
 	try {
-		const update_result = await pool.query(`UPDATE accounts SET ${to_sql(set.sql)} WHERE id=$${set.next_idx}`, set.values);
+		const update_result = await pool.query(`UPDATE accounts ${to_sql(set.sql)} WHERE id=$${set.next_idx}`, set.values);
 		return update_result.rowCount;
 	} catch (e) {
 		if (e.code)
@@ -324,7 +377,11 @@ export async function get_account_logins(account_id, pagination) {
 	const values = [account_id, start_id, pagination.items_per_page];
 
 	try {
-		const login_count = await get_row_count(LOGIN.THIS, { [LOGIN.ACCOUNT_ID] : account_id });
+		const login_count = await get_row_count(LOGIN.THIS, {
+			fields : {
+				[LOGIN.ACCOUNT_ID] : account_id,
+			}
+		});
 		const logins = await pool.query('SELECT * FROM logins WHERE account_id=$1 ORDER by login_time DESC ' + ` OFFSET $2 LIMIT $3`, values);
 
 		pagination.item_count = login_count;
