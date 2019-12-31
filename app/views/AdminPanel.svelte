@@ -1,8 +1,10 @@
 <script>
+        import { onMount } from 'svelte'
 	import UserList from '../views/UserList'
 	import CharacterList from '../views/CharacterList'
 	import CharacterLink from '../components/CharacterLink'
 	import AccountLink from '../components/AccountLink'
+        import { monitor_tabs } from '../util/navigation'
 	import axios from 'axios'
 	export let appAlert;
 
@@ -17,6 +19,10 @@
 			appAlert.message(e.message)
 		}
 	}
+
+        onMount(() => monitor_tabs((tab) => {
+          console.log(tab);
+        }));
 </script>
 
 <svelte:head>
@@ -40,13 +46,11 @@
 </ul>
 
 <div class="tab-content" id="tabs-tabContent">
-  <div class="tab-pane fade show active" id="search" role="tabpanel" aria-labelledby="search-tab">
+  <div class="tab-pane show active" id="search" role="tabpanel" aria-labelledby="search-tab">
 	  <form name="search" class="form-inline" on:submit|preventDefault={submitSearch}>
-	    <div class="form-group mx-sm-3 mb-2">
-	      <label for="inputSearch" class="sr-only">Search</label>
-	      <input type="text" class="form-control" id="inputSearch" name="search" placeholder="Search" minlength=3 required>
+	    <div class="form-group mx-sm-3">
+	      <input type="text" class="form-control" id="inputSearch" name="search" placeholder="Username/Character Name" minlength=3 required>
 	    </div>
-
 		<button type="submit" class="btn btn-primary mb-2">Search</button>
 	  </form>
 	  {#if results}
@@ -66,10 +70,10 @@
 	  </ol>
 	  {/if}
   </div>
-  <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="users-tab">
-	  <UserList {appAlert} />
+  <div class="tab-pane" id="users" role="tabpanel" aria-labelledby="users-tab">
+      <UserList setURLParam={true} {appAlert} />
   </div>
-  <div class="tab-pane fade" id="characters" role="tabpanel" aria-labelledby="characters-tab">
-	  <CharacterList {appAlert} />
+  <div class="tab-pane" id="characters" role="tabpanel" aria-labelledby="characters-tab">
+	  <CharacterList setURLParam={true} {appAlert} />
   </div>
 </div>

@@ -350,7 +350,7 @@ export async function search(term, pagination) {
 	const values = ['%'+term.toUpperCase()+'%', start_id, pagination.items_per_page];
 
 	try {
-		const accounts = await pool.query('SELECT id, username, gm FROM accounts ' +
+		const accounts = await pool.query('SELECT id, username, gm, inactive FROM accounts ' +
 			'WHERE upper(username) LIKE $1 '+
 		` ORDER BY username OFFSET $2 LIMIT $3`, values);
 		const characters = await pool.query('SELECT id, name, account_id, faction_id FROM characters ' +

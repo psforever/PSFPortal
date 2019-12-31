@@ -1,0 +1,81 @@
+html, body {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	background: $bg-color; 
+}
+
+body {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: 'Poppins', sans-serif;
+}
+
+// Sticky footer code
+main {
+	min-height: calc(100vh - 160px);
+	margin: 20px 0;
+	color: white;
+
+	.modal {
+		color: black;
+	}
+}
+
+.footer {
+	height: 60px;
+	font-size: 0.75em;
+}
+
+a {
+	color: rgb(0,150,250);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+/*a:visited {
+	color: rgb(0,160,190);
+}*/
+
+label {
+	display: block;
+}
+
+input, button, select, textarea {
+	font-family: inherit;
+	font-size: inherit;
+	padding: 0.4em;
+	margin: 0 0 0.5em 0;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 2px;
+}
+
+input:disabled {
+	color: #ccc;
+}
+
+input[type="range"] {
+	height: 0;
+}
+
+button {
+	background-color: #f4f4f4;
+	outline: none;
+}
+
+button:active {
+	background-color: #ddd;
+}
+
+button:focus {
+	border-color: #666;
+}
+
+.form-control-plaintext {
+	color: white;
+}

@@ -4,6 +4,7 @@
 	import Pagination from '../components/Pagination'
 
 	export let setURLParam = false;
+        export let URLSearchName = 'page';
 	export let fetch;
 
 	let data;
@@ -18,8 +19,9 @@
 		const url = new URL(window.location.href)
 		let initialPage = 1;
 
+          console.log(setURLParam, URLSearchName)
 		if (setURLParam) {
-			let param = parseInt(url.searchParams.get('page'))
+			let param = parseInt(url.searchParams.get(URLSearchName))
 
 			if (param != NaN)
 				initialPage = param;
@@ -31,6 +33,13 @@
 	async function pageChange(page) {
 		if (pagination.page == page || fetching)
 			return
+
+		if (setURLParam) {
+                   const url = new URL(window.location.href);
+                   url.searchParams.set(URLSearchName, page);
+                   history.replaceState(null, null,
+                    url.pathname + url.search + url.hash)
+                }
 
 		await list_fetch(page);
 	}
@@ -56,9 +65,15 @@
 {#if data}
 <slot name="header" data={data} pagination={pagination}></slot>
 {#if pagination.item_count > 0}
-<Pagination {pagination} {pageChange} {setURLParam} />
-<slot name="body" data={data} pagination={pagination}></slot>
-<Pagination {pagination} {pageChange} {setURLParam} />
+	{#if pagination.page_count > 1}
+        <Pagination {pagination} {pageChange} {setURLParam} {URLSearchName} />
+	{/if}
+
+	<slot name="body" data={data} pagination={pagination}></slot>
+
+	{#if pagination.page_count > 1}
+        <Pagination {pagination} {pageChange} {setURLParam} {URLSearchName} />
+	{/if}
 {/if}
 <slot name="footer" data={data} pagination={pagination}></slot>
 {/if}

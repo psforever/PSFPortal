@@ -6,6 +6,7 @@
 	import ActionModal from '../components/ActionModal.svelte'
 	import moment from 'moment'
 
+        export let setURLParam = false;
 	export let appAlert
 	let userList;
 
@@ -21,23 +22,23 @@
 	}
 </script>
 
-<PaginatedList bind:this={userList} bind:fetch={fetch} let:data={users} let:pagination={pagination}>
+<PaginatedList {setURLParam} bind:this={userList} bind:fetch={fetch} let:data={users} let:pagination={pagination}>
 	<div slot="header">
 		<p>{pagination.item_count.toLocaleString()} users in the database</p>
 	</div>
 
-	<table slot="body" class="table table-dark table-responsive">
-	  <thead>
-		<td>ID</td>
-		<td>Username</td>
-		<td>User Created</td>
-		<td>Last Login</td>
-		<td>Actions</td>
+	<table slot="body" class="table table-sm table-dark table-responsive-md table-striped table-hover">
+	  <thead class="thead-light">
+		<th>ID</th>
+		<th>Username</th>
+		<th>User Created</th>
+		<th>Last Login</th>
+		<th>Actions</th>
 	  </thead>
 	  <tbody>
 	  {#each users as user, i}
 		<tr>
-			<td>#{user.id}</td>
+			<th>#{user.id}</th>
 			<td><AccountLink account={user} /></td>
 			<td>{moment(user.created).fromNow()}</td>
 			<td>{#if user.last_login.time}

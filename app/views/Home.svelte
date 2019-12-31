@@ -33,7 +33,7 @@
 </script>
 
 <svelte:head>
-<title>PSForever</title>
+<title>PSForever Portal</title>
 </svelte:head>
 
 <Alert bind:this={alert} />

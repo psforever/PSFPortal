@@ -1,4 +1,9 @@
 // bootstrap style overrides
 @import "custom";
 @import "~bootstrap/scss/bootstrap";
+
+$bg-color: #171d3a;
+
 @import "defaults";
+@import "base";
+@import "planetside";

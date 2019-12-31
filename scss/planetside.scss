@@ -1,0 +1,32 @@
+$faction-vs: #440E62;
+$faction-nc: #004B80;
+$faction-tr: #9E0B0F;
+
+.faction-vs {
+	color: $faction-vs;
+}
+
+.faction-nc {
+	color: $faction-nc;
+}
+
+.faction-tr {
+	color: $faction-tr;
+}
+
+.faction-vs-bg {
+	background: $faction-vs;
+}
+
+.faction-nc-bg {
+	background: $faction-nc;
+}
+
+.faction-tr-bg {
+	background: $faction-tr;
+}
+
+.faction-icon {
+	width: 32px;
+	display: inline-block;
+}

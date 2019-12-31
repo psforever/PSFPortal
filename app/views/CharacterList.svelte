@@ -4,6 +4,7 @@
 	import CharacterLink from '../components/CharacterLink'
 	import PaginatedList from '../components/PaginatedList'
 	import moment from 'moment'
+        export let setURLParam = true;
 
 	export let appAlert
 
@@ -19,17 +20,17 @@
 	}
 </script>
 
-<PaginatedList bind:fetch={fetch} let:data={characters} let:pagination={pagination}>
+<PaginatedList {setURLParam} URLSearchName='page_char' bind:fetch={fetch} let:data={characters} let:pagination={pagination}>
 	<div slot="header">
 		<p>{pagination.item_count.toLocaleString()} characters in the database</p>
 	</div>
 
-	<table slot="body" class="table table-dark table-responsive">
-	  <thead>
-		<td>ID</td>
-		<td>Name</td>
-		<td>Last Played</td>
-		<td>Created</td>
+	<table slot="body" class="table table-sm table-dark table-responsive-md table-striped table-hover">
+	  <thead class="thead-light">
+		<th>ID</th>
+		<th>Name</th>
+		<th>Last Played</th>
+		<th>Created</th>
 	  </thead>
 	  <tbody>
 	  {#each characters as char, i}

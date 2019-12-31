@@ -27,6 +27,9 @@ import UserList from './views/UserList.svelte';
 import AdminPanel from './views/AdminPanel.svelte';
 import CharacterList from './views/CharacterList.svelte';
 
+// Defined by webpack
+let APP_VERSION = __VERSION__;
+
 // prevent view pop-in
 let initialized = false;
 
@@ -117,7 +120,9 @@ page("*", setRoute(BadRoute));
 
 <footer class="footer">
   <div class="container text-center">
-    <span class="text-muted">
+    <span class="text-muted">PSFPortal {APP_VERSION} (<a href="https://github.com/psforever/PSFPortal">GitHub</a>) -
+	<a data-toggle="modal" data-target="#reportIssueModal" href="#feedback">Feedback</a></span>
+	  <span class="text-muted"><br/><br/>
       &copy;2019, PSForever.net, All Rights Reserved.<br/>
       PlanetSide is a registered trademark of Daybreak Game Company, LLC. PSForever claims no such trademarks.<br/>
 All other trademarks or tradenames are properties of their respective owners.
@@ -127,3 +132,25 @@ All other trademarks or tradenames are properties of their respective owners.
 
 {/if}
 
+<div class="modal fade" id="reportIssueModal" tabindex="-1" role="dialog" aria-labelledby="reportIssueLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reportIssueLabel">How to report an issue</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+		  <ul>
+			  <li>If you are having trouble using the web application, you can contact one of the admins on Discord for support.</li>
+			  <li>If you have found a reproducable bug in the application, please <a href="https://github.com/psforever/PSFPortal/issues/new">open a github issue</a>.</li>
+			  <li>If have some ideas or code to improve the app, <a href="https://github.com/psforever/PSFPortal">set up the project</a>, and open a pull request!</li>
+		  </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">OK</button>
+      </div>
+    </div>
+  </div>
+</div>

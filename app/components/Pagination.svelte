@@ -1,17 +1,17 @@
 <script>
+  import page from 'page'
 	export let pagination;
 	export let pageChange;
-	export let setURLParam = false;
+
+        export let URLSearchName = 'page';
 	export let displayPages = 10;
 
 	let pages = []
 
 	function pageClick(event) {
-		const page = event.target.getAttribute('data-page');
-		pageChange(parseInt(page))
-
-		if (!setURLParam)
-			event.preventDefault()
+		const target_page = parseInt(event.target.getAttribute('data-page'));
+                event.preventDefault()
+		pageChange(target_page)
 	}
 
 	$ : {
@@ -66,8 +66,8 @@
 <nav aria-label="Page navigation">
 	<ul class="pagination pagination-sm">
 		<li class="page-item" class:disabled={pagination.page<=1}>
-			<a class="page-link" href={"?page="+(pagination.page-1)}
-				on:click={pageClick}
+                  <a class="page-link" href="?{URLSearchName}={pagination.page-1}"
+				on:click|preventDefault={pageClick}
 				data-page={pagination.page-1}
 				aria-label="Previous">
 				&laquo;
@@ -78,14 +78,14 @@
 		<li class="page-item page-last-separator disabled"><span class="page-link">...</span></li>
 		{:else}
 		<li class="page-item" class:active={page==pagination.page}>
-			<a on:click={pageClick} href={"?page="+page} data-page={page} class="page-link">{page}</a>
+                  <a on:click|preventDefault={pageClick} href="?{URLSearchName}={page}" data-page={page} class="page-link">{page}</a>
 		</li>
 		{/if}
 		{/each}
 		<li class="page-item" class:disabled={pagination.page>=pagination.page_count}>
-			<a class="page-link" href={"?page="+(pagination.page+1)}
+                  <a class="page-link" href="?{URLSearchName}={pagination.page+1}"
 			   data-page={pagination.page+1}
-			   on:click={pageClick}
+			   on:click|preventDefault={pageClick}
 			   aria-label="Next">
 				&raquo;
 			</a>

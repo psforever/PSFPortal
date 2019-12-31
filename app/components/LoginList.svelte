@@ -22,10 +22,8 @@
 
 <PaginatedList {fetch} let:data={logins} let:pagination={pagination}>
 	<p slot="header">
-	{#if pagination.item_count}
-	Login data
-	{:else}
-	No logins yet
+	{#if !pagination.item_count}
+	No logins yet.
 	{/if}
 	</p>
 	<table slot="body" class="table table-dark table-responsive">
