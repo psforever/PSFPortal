@@ -121,9 +121,8 @@ page("*", setRoute(BadRoute));
 <footer class="footer">
   <div class="container text-center">
     <span class="text-muted">PSFPortal {APP_VERSION} (<a href="https://github.com/psforever/PSFPortal">GitHub</a>) -
-	<a data-toggle="modal" data-target="#reportIssueModal" href="#feedback">Feedback</a></span>
-	  <span class="text-muted"><br/><br/>
-      &copy;2019, PSForever.net, All Rights Reserved.<br/>
+	<a data-toggle="modal" data-target="#reportIssueModal" href="#feedback">Feedback</a> - 
+		&copy;{(new Date()).getFullYear()}, PSForever.net, All Rights Reserved.<br/>
       PlanetSide is a registered trademark of Daybreak Game Company, LLC. PSForever claims no such trademarks.<br/>
 All other trademarks or tradenames are properties of their respective owners.
     </span>
@@ -136,7 +135,7 @@ All other trademarks or tradenames are properties of their respective owners.
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="reportIssueLabel">How to report an issue</h5>
+        <h5 class="modal-title" id="reportIssueLabel">Feedback: PSFPortal {APP_VERSION}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
