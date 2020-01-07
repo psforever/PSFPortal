@@ -14,6 +14,8 @@ An API + webapp to manage PSForever accounts, characters, and servers.
 ## Developing
 **This requires a [relatively modern version](https://nodejs.org/en/download/current/) of Node that supports async/await and ES6 (v13.x+). Tested using v13.3.0. Do not use LTS builds.** You may still get `(node:61412) ExperimentalWarning: The ESM module loader is experimental.`. Ignore this as ESM is essentially stable in recent versions.
 
+**Windows users: Before continuing, run `npm install --global --production windows-build-tools`. Otherwise, `bcrypt` won't install properly.**
+
 First download and install the Node dependencies:
 ```
 git clone https://github.com/psforever/PSFPortal
@@ -21,12 +23,38 @@ cd PSFPortal/
 npm install
 ```
 
-Next, install PostgreSQL from your package manager.
-Load the DB schema into a fresh database (in this case named psforever):
+You should see no errors (warnings are okay).
+
+### Database
+
+Next, install PostgreSQL from your package manager or the following links:
+
+* Windows - [Official Downloads](https://www.postgresql.org/download/linux/ubuntu/)
+* Linux - [Debian](https://www.postgresql.org/download/linux/debian/) or [Ubuntu](https://www.postgresql.org/download/linux/ubuntu/)
+* macOS - Application https://www.postgresql.org/download/ (or `brew install postgresql && brew services start postgresql`)
+
+Create a database named `psforever` using `psql` or a graphical tool such as [pgAdmin](https://www.pgadmin.org/download/) (highly recommended).
+Then create a user named `psforever` with a password of `psforever` and `GRANT` it access to the `psforever` database, public tables, and public sequences.
+This can be summarized with the following raw SQL commands:
+
+```sql
+CREATE USER psforever;
+CREATE DATABASE psforever;
+GRANT ALL PRIVILEGES ON DATABASE psforever TO psforever;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO psforever;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO psforever;
+ALTER USER psforever WITH PASSWORD 'psforever';
+```
+
+Load the DB schema into the database using the command line:
 
 ```
 psql psforever < db/schema.sql
 ```
+
+Or the pgAdmin's "Query Tool" interface.
+
+### Running
 
 Before running, you will need to create a `.env` file in the root of the project like this:
 
@@ -40,8 +68,6 @@ COOKIE_SECRET=make_this_very_long_and_random
 ```
 
 **Never** share/release/commit your `.env` file.
-
-### Running
 
 Run the following commands:
 
