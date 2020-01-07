@@ -12,7 +12,7 @@ An API + webapp to manage PSForever accounts, characters, and servers.
 * WorldServer mangement
 
 ## Developing
-This requires a relatively modern version of Node that supports async/await and ES6 (v13.x+). Tested using v13.3.0. You may still get `(node:61412) ExperimentalWarning: The ESM module loader is experimental.`. Ignore this as ESM is essentially stable in recent versions.
+**This requires a [relatively modern version](https://nodejs.org/en/download/current/) of Node that supports async/await and ES6 (v13.x+). Tested using v13.3.0. Do not use LTS builds.** You may still get `(node:61412) ExperimentalWarning: The ESM module loader is experimental.`. Ignore this as ESM is essentially stable in recent versions.
 
 First download and install the Node dependencies:
 ```
@@ -28,26 +28,98 @@ Load the DB schema into a fresh database (in this case named psforever):
 psql psforever < db/schema.sql
 ```
 
-Before running, you will need to create a `.env` file like this:
+Before running, you will need to create a `.env` file in the root of the project like this:
 
 ```
-PGUSER=...
-PGHOST=...
-PGPASSWORD=...
-PGDATABASE=...
-PGPORT=...
-COOKIE_SECRET=<make this very long and random>
+PGUSER=your_database_user
+PGHOST=localhost
+PGPASSWORD=your_database_user_password
+PGDATABASE=psforever
+PGPORT=5432
+COOKIE_SECRET=make_this_very_long_and_random
 ```
 
-Never share/release/commit your `.env` file.
+**Never** share/release/commit your `.env` file.
 
-Finally, run the following commands:
+### Running
+
+Run the following commands:
+
 ```
-# Will start the frontend Webpack builder with hot reload
-npm run dev
-# And in another terminal, will start the backend server
+# Will start the backend server (:8080)
 npm run dev-server
 ```
+
+You should see similar output:
+```
+> psfportal@1.0.0 dev-server
+> nodemon -w api/ -w index.js
+
+[nodemon] 2.0.2
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching dir(s): api/**/* index.js
+[nodemon] watching extensions: js,mjs,json
+[nodemon] starting `node index.js`
+(node:25327) ExperimentalWarning: The ESM module loader is experimental.
+WARNING: development server simulated delay active
+Connected to the psql database at localhost
+[MODE development] PSFWeb now accepting requests at http://localhost:8080/
+```
+
+Finally run in another terminal:
+
+```
+# Will start the frontend Webpack builder with hot reload (:8081)
+npm run dev
+```
+
+You should see similar output:
+```
+> psfportal@1.0.0 dev /home/username/PSFPortal
+> webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public
+
+ℹ ｢wds｣: Project is running at http://localhost:8081/
+ℹ ｢wds｣: webpack output is served from /
+ℹ ｢wds｣: Content not from webpack is served from /home/username/PSFPortal/public
+ℹ ｢wds｣: 404s will fallback to /index.html
+ℹ ｢wdm｣: Hash: 7936960d2ecba7f25c89
+Version: webpack 4.41.5
+Time: 4075ms
+Built at: 01/07/2020 6:47:43 PM
+        Asset      Size  Chunks                   Chunk Names
+    bundle.js  2.09 MiB  bundle  [emitted]        bundle
+bundle.js.map  2.22 MiB  bundle  [emitted] [dev]  bundle
+Entrypoint bundle = bundle.js bundle.js.map
+[1] multi (webpack)-dev-server/client?http://localhost:8081 ./app/main.js 40 bytes {bundle} [built]
+[./app/App.svelte] 14.5 KiB {bundle} [built]
+<snip>
+    + 218 hidden modules
+ℹ ｢wdm｣: Compiled successfully.
+```
+
+Please note that Webpack (dev) will proxy all API requests (/api) to the host `http://localhost:8080` (see the `devServer` key in [webpack.config.cjs](webpack.config.cjs)). This MUST match your backend server's (dev-server) listening port, which is by default 8080.
+
+**Finally, connect to http://localhost:8081** (webpack, not the raw express server)
+
+### Troubleshooting
+
+1. Database SELECT/INSERTs are failing, but I can connect to the DB
+
+Make sure you have granted the right permissions to your DB user.
+
+```
+GRANT ALL PRIVILEGES ON DATABASE user TO dbname;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO user;
+```
+
+2. `[HPM] Error occurred while trying to proxy request /api/stats from localhost:8080 to http://localhost:8080`
+
+Your Webpack instance is listening on 8080, when it should be listening on 8081 and proxying to the express server at 8080. Make sure to run `npm run dev-server` first and make sure it ran properly.
+
+3. `Error: Cannot find package 'bcrypt'`
+
+The `bcrypt` package has native dependencies that must match your Node version. If you upgrade Node, they will be outdated. To fix this, you need to remove your `node_modules/` directory and run `npm install` again to kick off another native build of this dependency.
 
 ## Production Running/Building
 Follow the same steps as above, but instead run `npm run production` at the very end.
