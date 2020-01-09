@@ -29,7 +29,7 @@ You should see no errors (warnings are okay).
 
 Next, install PostgreSQL from your package manager or the following links:
 
-* Windows - [Official Downloads](https://www.postgresql.org/download/linux/windows/)
+* Windows - [Official Downloads](https://www.postgresql.org/download/windows/)
 * Linux - [Debian](https://www.postgresql.org/download/linux/debian/) or [Ubuntu](https://www.postgresql.org/download/linux/ubuntu/)
 * macOS - Application https://www.postgresql.org/download/ (or `brew install postgresql && brew services start postgresql`)
 
