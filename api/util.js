@@ -133,3 +133,45 @@ export async function fetch_user_middleware(req, res, next, id) {
 		res.status(500).json({message: 'error'});
 	}
 }
+
+async function sessionRequired(req, res, next) {
+	console.log("SESSION REQUIRED")
+	if (!req.session || !req.session.account_id) {
+		res.status(403).json({message: 'session required'})
+	} else {
+		if (req.session_account) {
+			next()
+		} else {
+			try {
+				const account = await db.get_account_by_id(req.session.account_id);
+
+				if (!account) {
+					console.log("ERROR: failed to lookup account from session!")
+					res.status(500).json({message: 'error'});
+				} else {
+					req.session_account = account;
+					next();
+				}
+			} catch (e) {
+				console.log(e)
+				res.status(500).json({message: 'error'});
+			}
+		}
+	}
+}
+
+async function adminRequired(req, res, next) {
+	if (!req.session_account) {
+		console.log("ERROR: sessionRequired needs to be called before adminRequired")
+		res.status(403).json({message: 'session required'})
+	} else {
+		if (req.session_account.gm === true && req.session_account.inactive === false) {
+			next();
+		} else {
+			res.status(403).json({message : 'admin required'})
+		}
+	}
+}
+
+export const NEED_SESSION = sessionRequired;
+export const NEED_ADMIN = [sessionRequired, adminRequired];

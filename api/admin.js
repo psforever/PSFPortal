@@ -1,12 +1,12 @@
 import express from 'express'
 import * as db from './db.js'
-import { get_pagination, get_filter, get_sort, fetch_user_middleware } from './util.js'
+import { NEED_ADMIN, get_pagination, get_filter, get_sort, fetch_user_middleware } from './util.js'
 
 const api = express.Router();
 
 api.param("user", fetch_user_middleware);
 
-api.get('/users', async (req, res, next) => {
+api.get('/users', NEED_ADMIN, async (req, res, next) => {
 	const pagination = get_pagination(req);
 	const filter = get_filter(req,
 		{
@@ -41,7 +41,7 @@ api.get('/users', async (req, res, next) => {
 	}
 });
 
-api.post('/search', async (req, res, next) => {
+api.post('/search', NEED_ADMIN, async (req, res, next) => {
 	const pagination = get_pagination(req);
 
 	let search = req.body.search;
@@ -60,13 +60,13 @@ api.post('/search', async (req, res, next) => {
 	}
 });
 
-api.get('/user/:user', async (req, res, next) => {
+api.get('/user/:user', NEED_ADMIN, async (req, res, next) => {
 	const account = req.user;
 
 	res.status(200).json({ id : account.id, name: account.username });
 });
 
-api.post('/user/:user/add_gm', async (req, res, next) => {
+api.post('/user/:user/add_gm', NEED_ADMIN, async (req, res, next) => {
 	const account = req.user;
 
 	try {
@@ -78,7 +78,7 @@ api.post('/user/:user/add_gm', async (req, res, next) => {
 	}
 });
 
-api.post('/user/:user/remove_gm', async (req, res, next) => {
+api.post('/user/:user/remove_gm', NEED_ADMIN, async (req, res, next) => {
 	const account = req.user;
 
 	try {
@@ -90,7 +90,7 @@ api.post('/user/:user/remove_gm', async (req, res, next) => {
 	}
 });
 
-api.post('/user/:user/ban', async (req, res, next) => {
+api.post('/user/:user/ban', NEED_ADMIN, async (req, res, next) => {
 	const account = req.user;
 
 	try {
@@ -103,7 +103,7 @@ api.post('/user/:user/ban', async (req, res, next) => {
 	}
 });
 
-api.post('/user/:user/unban', async (req, res, next) => {
+api.post('/user/:user/unban', NEED_ADMIN, async (req, res, next) => {
 	const account = req.user;
 
 	try {
@@ -115,7 +115,7 @@ api.post('/user/:user/unban', async (req, res, next) => {
 
 });
 
-api.get('/characters', async (req, res, next) => {
+api.get('/characters', NEED_ADMIN, async (req, res, next) => {
 	const pagination = get_pagination(req);
 
 	try {

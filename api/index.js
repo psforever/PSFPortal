@@ -1,3 +1,4 @@
+import fs from 'fs'
 import express from 'express'
 import bodyParser from 'body-parser'
 import * as db from './db.js'
@@ -6,6 +7,7 @@ import api_user from './user.js'
 import api_info from './info.js'
 import api_admin from './admin.js'
 
+const VERSION = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
 const api = express.Router();
 
 if (process.env.NODE_ENV !== "production") {
@@ -17,46 +19,19 @@ if (process.env.NODE_ENV !== "production") {
 	});
 }
 
-async function sessionRequired(req, res, next) {
-	if (!req.session || !req.session.account_id) {
-		res.status(403).json({message: 'session required'})
-	} else {
-		try {
-			const account = await db.get_account_by_id(req.session.account_id);
-
-			if (!account) {
-				console.log("ERROR: failed to lookup account from session!")
-				res.status(500).json({message: 'error'});
-			} else {
-				req.session_account = account;
-				next();
-			}
-		} catch (e) {
-			console.log(e)
-			res.status(500).json({message: 'error'});
-		}
-	}
-}
-async function adminRequired(req, res, next) {
-	if (!req.session_account) {
-		console.log("ERROR: sessionRequired needs to be called before adminRequired")
-		res.status(500).json({message: ''})
-	} else {
-		if (req.session_account.gm === true && req.session_account.inactive === false) {
-			next();
-		} else {
-			res.status(403).json({message : 'admin required'})
-		}
-	}
-}
-
 api.use(bodyParser.json());
 api.use(bodyParser.urlencoded({ extended: true }));
 
 api.use(api_auth)
 api.use(api_info)
-api.use(sessionRequired, api_user)
-api.use(sessionRequired, adminRequired, api_admin)
+
+// These calls are gated within their respective routers
+api.use(api_user)
+api.use(api_admin)
+
+api.get("/", async (req, res, next) => {
+	res.status(200).json({message : 'PSFPortal ' + VERSION + ' API base. Created by Chord for the PSForever Project: https://psforever.net'})
+});
 
 api.post("/bad_route", async (req, res, next) => {
 	console.log("BAD APP ROUTE:", req.body.route)

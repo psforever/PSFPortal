@@ -127,6 +127,8 @@ Please note that Webpack (dev) will proxy all API requests (/api) to the host `h
 
 **Finally, connect to http://localhost:8081** (webpack, not the raw express server)
 
+Register an account to start and grant it GM privileges using `UPDATE accounts SET gm=true WHERE id=your_id`.
+
 ### Troubleshooting
 
 1. Database SELECT/INSERTs are failing, but I can connect to the DB

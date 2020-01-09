@@ -1,12 +1,12 @@
 import express from 'express'
 import * as db from './db.js'
-import { get_pagination, fetch_user_middleware } from './util.js'
+import { NEED_SESSION, get_pagination, fetch_user_middleware } from './util.js'
 
 const api = express.Router();
 
 api.param("user", fetch_user_middleware);
 
-api.get('/user', async (req, res, next) => {
+api.get('/user', NEED_SESSION, async (req, res, next) => {
 	try {
 		const account = await db.get_account_by_id(req.session.account_id);
 		res.status(200).json({ id : account.id, name: account.username, admin : account.gm });
@@ -16,7 +16,7 @@ api.get('/user', async (req, res, next) => {
 	}
 });
 
-api.get('/user/:user/profile', async (req, res, next) => {
+api.get('/user/:user/profile', NEED_SESSION, async (req, res, next) => {
 	const target_account = req.user;
 
 	if (target_account.id !== req.session.account_id && !req.session_account.gm) {
@@ -44,7 +44,7 @@ api.get('/user/:user/profile', async (req, res, next) => {
 	}
 });
 
-api.get('/user/:user/logins', async (req, res, next) => {
+api.get('/user/:user/logins', NEED_SESSION, async (req, res, next) => {
 	const account = req.user;
 	const pagination = get_pagination(req);
 
