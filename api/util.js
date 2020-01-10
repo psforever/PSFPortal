@@ -135,7 +135,6 @@ export async function fetch_user_middleware(req, res, next, id) {
 }
 
 async function sessionRequired(req, res, next) {
-	console.log("SESSION REQUIRED")
 	if (!req.session || !req.session.account_id) {
 		res.status(403).json({message: 'session required'})
 	} else {

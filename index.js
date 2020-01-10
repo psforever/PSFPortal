@@ -26,12 +26,7 @@ const BASE_URL = 'https://play.psforever.net';
 
 const app = express();
 
-// apache logging on web requests
-if (MODE !== 'production') {
-	app.use(morgan('dev'));
-} else {
-	app.use(morgan('combined'));
-}
+app.use(morgan('dev'));
 
 if (process.env.TRUST_PROXY) {
 	console.log("Trusting proxy")
