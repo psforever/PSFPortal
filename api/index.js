@@ -1,7 +1,6 @@
 import fs from 'fs'
 import express from 'express'
 import bodyParser from 'body-parser'
-import * as db from './db.js'
 import api_auth from './authentication.js'
 import api_user from './user.js'
 import api_info from './info.js'
