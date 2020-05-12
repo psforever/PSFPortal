@@ -317,6 +317,17 @@ export async function get_account_by_name(name) {
 	}
 }
 
+export async function get_character_by_name(name) {
+	try {
+		const account = await pool.query('SELECT id, account_id, name, faction_id, created, last_login FROM characters WHERE name=$1 AND deleted=false', [name]);
+		return account.rows[0];
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
 export async function create_account(username, password) {
 	try {
 		const passhash = await bcrypt.hash(password, BCRYPT_ROUNDS);

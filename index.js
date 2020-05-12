@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import history from 'connect-history-api-fallback'
 import dotenv from 'dotenv'
 import api from './api/index.js'
+import { start_server_polling } from './api/psadmin.js'
 import * as db from './api/db.js'
 
 const envresult = dotenv.config();
@@ -44,6 +45,7 @@ if (process.env.TRUST_PROXY) {
 // Needs to be in a function to await the DB connection state
 (async () => {
 	await db.connect_to_db();
+	await start_server_polling()
 
 	const pgSession = connectPg(session);
 	 
