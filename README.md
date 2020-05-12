@@ -62,6 +62,7 @@ Before running, you will need to create a `.env` file in the root of the project
 PGUSER=your_database_user
 PGHOST=localhost
 PGPASSWORD=your_database_user_password
+PSADMIN="127.0.0.1:51002"
 PGDATABASE=psforever
 PGPORT=5432
 COOKIE_SECRET=make_this_very_long_and_random
@@ -69,15 +70,53 @@ COOKIE_SECRET=make_this_very_long_and_random
 
 **Never** share/release/commit your `.env` file.
 
-Run the following commands:
+Now run the following command:
 
 ```
-# Will start the backend server (:8080)
-npm run dev-server
+# Will start the backend server (:8080) and webpack
+npm run dev
 ```
 
 You should see similar output:
 ```
+> psfportal@1.0.0 dev /home/chord/PSFPortal
+> concurrently --kill-others "npm run dev-server" "npm run webpack"
+
+[1]
+[1] > psfportal@1.0.0 webpack /home/chord/PSFPortal
+[1] > webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public
+[1]
+[0]
+[0] > psfportal@1.0.0 dev-server /home/chord/PSFPortal
+[0] > nodemon -w api/ -w index.js
+[0]
+[0] [nodemon] 2.0.2
+[0] [nodemon] to restart at any time, enter `rs`
+[0] [nodemon] watching dir(s): api/**/* index.js
+[0] [nodemon] watching extensions: js,mjs,json
+[0] [nodemon] starting `node index.js`
+[0] (node:16193) ExperimentalWarning: The ESM module loader is experimental.
+[0] WARNING: development server simulated delay active
+[0] Trusting proxy
+[0] Connected to the psql database at localhost
+[0] Starting PSAdmin polling for 127.0.0.1:51002
+[0] [MODE development] PSFWeb now accepting requests at http://localhost:8080/
+[1] ℹ ｢wds｣: Project is running at http://dev.psforever.net:8081/
+[1] ℹ ｢wds｣: webpack output is served from /
+[1] ℹ ｢wds｣: Content not from webpack is served from /home/chord/PSFPortal/public
+[1] ℹ ｢wds｣: 404s will fallback to /index.html
+[1] ℹ ｢wdm｣: Hash: 72b56958125b6abdf96c
+[1] Version: webpack 4.41.5
+[1] Time: 4493ms
+[1] Built at: 05/12/2020 11:44:23 PM
+[1]         Asset      Size  Chunks                   Chunk Names
+[1]     bundle.js   2.1 MiB  bundle  [emitted]        bundle
+[1] bundle.js.map  2.23 MiB  bundle  [emitted] [dev]  bundle
+[1] Entrypoint bundle = bundle.js bundle.js.map
+[1] [1] multi (webpack)-dev-server/client?http://dev.psforever.net:8081 ./app/main.js 40 bytes {bundle} [built]
+[1] [./app/App.svelte] 14.5 KiB {bundle} [built]
+<snip>
+[1] ℹ ｢wdm｣: Compiled successfully.
 > psfportal@1.0.0 dev-server
 > nodemon -w api/ -w index.js
 
@@ -90,37 +129,6 @@ You should see similar output:
 WARNING: development server simulated delay active
 Connected to the psql database at localhost
 [MODE development] PSFWeb now accepting requests at http://localhost:8080/
-```
-
-Finally run in another terminal:
-
-```
-# Will start the frontend Webpack builder with hot reload (:8081)
-npm run dev
-```
-
-You should see similar output:
-```
-> psfportal@1.0.0 dev /home/username/PSFPortal
-> webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public
-
-ℹ ｢wds｣: Project is running at http://localhost:8081/
-ℹ ｢wds｣: webpack output is served from /
-ℹ ｢wds｣: Content not from webpack is served from /home/username/PSFPortal/public
-ℹ ｢wds｣: 404s will fallback to /index.html
-ℹ ｢wdm｣: Hash: 7936960d2ecba7f25c89
-Version: webpack 4.41.5
-Time: 4075ms
-Built at: 01/07/2020 6:47:43 PM
-        Asset      Size  Chunks                   Chunk Names
-    bundle.js  2.09 MiB  bundle  [emitted]        bundle
-bundle.js.map  2.22 MiB  bundle  [emitted] [dev]  bundle
-Entrypoint bundle = bundle.js bundle.js.map
-[1] multi (webpack)-dev-server/client?http://localhost:8081 ./app/main.js 40 bytes {bundle} [built]
-[./app/App.svelte] 14.5 KiB {bundle} [built]
-<snip>
-    + 218 hidden modules
-ℹ ｢wdm｣: Compiled successfully.
 ```
 
 Please note that Webpack (dev) will proxy all API requests (/api) to the host `http://localhost:8080` (see the `devServer` key in [webpack.config.cjs](webpack.config.cjs)). This MUST match your backend server's (dev-server) listening port, which is by default 8080.
