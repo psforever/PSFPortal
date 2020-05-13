@@ -15,14 +15,14 @@ let pg_error_inv = objectFlip(pg_error)
 
 export let pool;
 
-const FACTION_MAP = {
+export const FACTION_MAP = {
 	0 : ["Terran Republic", "TR"],
 	1 : ["New Conglomerate", "NC"],
 	2 : ["Vanu Sovereignty", "VS"],
 	3 : ["Neutral", "NL"],
 }
 
-const FACTION_MAP_INV = objectFlip(FACTION_MAP)
+export const FACTION_MAP_INV = objectFlip(FACTION_MAP)
 const BCRYPT_ROUNDS = 4;
 
 export const SQL_ORDER = Object.freeze({
@@ -358,23 +358,37 @@ export async function update_account(account_id, fields) {
 	}
 }
 
+export async function get_empire_stats() {
+	try {
+		const query = await pool.query('SELECT faction_id, COUNT(*) FROM characters GROUP BY faction_id');
+		const empires = {};
+
+		query.rows.forEach((r) => {
+			empires[FACTION_MAP[r.faction_id][1]] = parseInt(r.count);
+		});
+
+		return empires;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+	return stats;
+}
+
 export async function get_stats() {
 	try {
 		const account_count = await get_row_count(ACCOUNT.THIS);
 		const character_count = await get_row_count(CHARACTER.THIS);
 		const last_character = await pool.query('SELECT id, account_id, name, faction_id, created FROM characters ORDER BY id DESC LIMIT 1');
-		const empires = await pool.query('SELECT faction_id, COUNT(*) FROM characters GROUP BY faction_id');
 
 		const stats = {}
+
 		stats.accounts = account_count;
 		stats.characters = character_count;
 		stats.last = {};
 		stats.last.character = last_character.rows[0];
-		stats.empires = {};
 
-		empires.rows.forEach((r) =>
-			stats.empires[FACTION_MAP[r.faction_id][1]] = parseInt(r.count)
-		);
 		return stats;
 	} catch (e) {
 		if (e.code)
