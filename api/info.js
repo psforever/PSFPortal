@@ -23,7 +23,6 @@ api.get('/stats', async (req, res, next) => {
 				console.log("WARNING: cannot find player info '" + players[i] + "'")
 		}
 
-		console.log(stats)
 		info.players = player_info
 		res.status(200).json({ ...stats, ...info });
 	} catch (e) {
