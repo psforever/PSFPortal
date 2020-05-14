@@ -13,18 +13,19 @@ api.get('/stats', async (req, res, next) => {
 		const info = get_server_info();
 		let player_info = []
 		let players = info.players;
+
 		for (let i = 0; i < players.length; i++) {
 			const char = await db.get_character_by_name(players[i]);
 
 			if (char) {
 				player_info = player_info.concat(char)
 				stats.empires[db.FACTION_MAP[char.faction_id][1]] += 1
-			} else
-				console.log("WARNING: cannot find player info '" + players[i] + "'")
+			} else {
+				console.log("WARNING: cannot find player info '" + players[i] + "' (are you sure PSAdmin is configured right?)")
+			}
 		}
 
-		info.players = player_info
-		res.status(200).json({ ...stats, ...info });
+		res.status(200).json({status : info.status, players : player_info, ...stats });
 	} catch (e) {
 		console.log(e);
 		res.status(500).json({ message : 'error' });
