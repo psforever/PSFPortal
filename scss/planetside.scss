@@ -1,6 +1,6 @@
-$faction-vs: #440E62;
-$faction-nc: #004B80;
-$faction-tr: #9E0B0F;
+$faction-vs: #460e62;
+$faction-nc: #003e80;
+$faction-tr: #c82f1c;
 
 .faction-vs {
 	color: $faction-vs;
@@ -15,15 +15,18 @@ $faction-tr: #9E0B0F;
 }
 
 .faction-vs-bg {
-	background: $faction-vs;
+	background: rgb(1,13,29);
+	background: linear-gradient(90deg, rgba(1,13,29,1) 0%, rgba(70,42,173,1) 15%, rgba(84,49,214,1) 50%, rgba(70,42,173,1) 85%, rgba(1,13,29,1) 100%);
 }
 
 .faction-nc-bg {
-	background: $faction-nc;
+	background: rgb(1,13,29);
+	background: linear-gradient(90deg, rgba(1,13,29,1) 0%, rgba(4,46,135,1) 15%, rgba(5,56,163,1) 50%, rgba(4,46,135,1) 85%, rgba(1,13,29,1) 100%);
 }
 
 .faction-tr-bg {
-	background: $faction-tr;
+	background: rgb(1,13,29);
+	background: linear-gradient(90deg, rgba(1,13,29,1) 0%, rgba(158,38,23,1) 15%, rgba(200,47,28,1) 50%, rgba(158,38,23,1) 85%, rgba(1,13,29,1) 100%);
 }
 
 .faction-icon {
