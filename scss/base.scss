@@ -37,6 +37,7 @@ a {
 }
 
 a:hover {
+	color: darken(rgb(0,150,250), 10%);
 	text-decoration: underline;
 }
 
