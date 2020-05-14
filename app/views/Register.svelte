@@ -106,6 +106,6 @@
 				<div class="invalid-feedback">Email addresses must match.</div>
 			</div>
 		</div>
-		<button type="submit">Join the fight!</button>
+		<button type="submit" class="btn btn-primary">Join the fight!</button>
 	</form>
 </main>

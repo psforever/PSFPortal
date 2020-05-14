@@ -85,7 +85,7 @@
       <label for="inputPassword">Password</label>
       <input class="form-control" type="password" id="inputPassword" placeholder="Password" name="password" required>
     </div>
-    <button type="submit">Login</button>
+    <button type="submit" class="btn btn-primary">Login</button>
   </form>
   <p><a href="/recovery">Forgot username/password?</a></p>
 </main>

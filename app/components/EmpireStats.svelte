@@ -72,6 +72,21 @@
   position: relative;
 }
 
+.empire-stats:before {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.4;
+    background-image: url('/img/logo_crop.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .empire-stat {
   border: 1px solid white;
   border-bottom: 0;
@@ -80,6 +95,7 @@
   text-align: center;
   min-width: 50px;
   min-height: 3em;
+  text-shadow: 2px 2px #000000;
 }
 
 .empire-stat:nth-child(2) {

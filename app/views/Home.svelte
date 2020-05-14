@@ -96,6 +96,11 @@
 	<h2>Online Players ({players.length})</h2>
 	<p>Next update in {next_update_label}</p>
 	</div>
+	<div class="col-md-4 col-12 mt-md-0 mt-3">
+		{#if stats.empires}
+		<EmpireStats bind:this={empire_stats} bind:stats={stats.empires} />
+		{/if}
+	</div>
 	<div class="col-md-8 col-12">
 		<div class="row">
 			{#each players as char, i}
@@ -103,11 +108,6 @@
 			{/each}
 		</div>
 
-	</div>
-	<div class="col-md-4 col-12 mt-md-0 mt-3">
-		{#if stats.empires}
-		<EmpireStats bind:this={empire_stats} bind:stats={stats.empires} />
-		{/if}
 	</div>
 </div>
 {/if}
