@@ -1,6 +1,6 @@
 {
   "name": "psfportal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "A web interface to PSForever servers.",
   "main": "index.js",
