@@ -20,3 +20,13 @@
         transform: translate3d(4px, 0, 0);
     }
 }
+
+.btn-primary {
+	@include button-variant(lighten($ps-dark-accent,10%), $ps-accent);
+	text-shadow: 2px 2px 1px #111;
+	border-width: 2px;
+}
+
+.btn-secondary {
+	@include button-variant($secondary, $secondary);
+}
