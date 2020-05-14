@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import axios from 'axios'
   import moment from 'moment'
+  import { onInterval } from '../util'
 
   import { loggedIn } from '../UserState'
   import Alert from '../components/Alert'
@@ -25,7 +26,10 @@
   onMount(async () => {
 	await update_stats()
 	update_stats_label()
-	setInterval(update_stats_label, 1000)
+
+	// we must use this wrapper to ensure setIntervals are cleaned
+	// up on view change
+	onInterval(update_stats_label, 1000)
 
     ready = true
   })
