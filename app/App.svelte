@@ -95,16 +95,23 @@ function setRoute(r, initialState) {
   };
 }
 
+(async () => {
 page("/", setRoute(Home, true));
 page("/login", setRoute(Login, true));
 page("/register", setRoute(Register));
 page("/admin", setRoute(AdminPanel));
 page("/profile", setRoute(Profile, true));
 page("/user/:id", setRoute(Profile, true));
+if (process.env.NODE_ENV !== 'production') {
+	console.log("Development mode active");
+	const cc = await import('./views/components.svelte');
+	page("/components", setRoute(cc.default, true));
+}
 //page("/users", setRoute(UserList));
 //page("/characters", setRoute(CharacterList));
 //page("/recovery", setRoute(Recovery));
 page("*", setRoute(BadRoute));
+})();
 </script>
 
 {#if currentCtx}
