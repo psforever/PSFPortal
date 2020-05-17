@@ -4,7 +4,7 @@
 	export let route;
 </script>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark justify-content-between">
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark justify-content-between">
 	<div class="container">
 		<a class="navbar-brand" href="/">
 			<img src="/img/logo_crop.png" height="30" class="d-inline-block align-top" alt="">
