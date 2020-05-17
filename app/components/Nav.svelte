@@ -36,9 +36,9 @@
 				<li class="nav-item" class:active={route=="/login"}>
 					<a class="nav-link" href="/login">Login</a>
 				</li>
-				<li class="nav-item" class:active={route=="/register"}>
+				<!--<li class="nav-item" class:active={route=="/register"}>
 					<a class="nav-link" href="/register">Register</a>
-				</li>
+				</li>-->
 				{/if}
 			</ul>
 		</div>

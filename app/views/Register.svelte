@@ -73,6 +73,7 @@
 
 	<Alert bind:this={alert} />
 
+	<h2 style="color:red;">Registration is currently disabled. Login via the game client</h2>
 	<form name="login" class:was-validated={validated} class="form-group needs-validation" novalidate on:submit|preventDefault={submitLogin}>
 		<div class="form-group">
 			<label for="inputUsername">Username</label>

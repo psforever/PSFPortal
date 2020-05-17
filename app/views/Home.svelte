@@ -77,8 +77,8 @@
 		<div class="row">
 			<div class="col">
 				{#if !$loggedIn}
-				<a class="btn btn-primary" href="/login" role="button">Login</a>
-				<a class="btn btn-primary" href="/register" role="button">Create Account</a>
+				<!--<a class="btn btn-primary" href="/login" role="button">Login</a>
+				<a class="btn btn-primary" href="/register" role="button">Create Account</a>-->
 				{/if}
 				<a class="btn btn-secondary" href="https://docs.google.com/document/d/1ZMx1NUylVZCXJNRyhkuVWT0eUKSVYu0JXsU-y3f93BY/edit" role="button">Setup Instructions</a>
 			</div>

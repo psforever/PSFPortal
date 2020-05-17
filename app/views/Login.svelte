@@ -76,6 +76,7 @@
 
   <Alert bind:this={alert} />
 
+  <h3 style="color: red;">Login only enabled for GMs at this time</h3>
   <form name="login" class="form-group" on:submit|preventDefault={submitLogin}>
     <div class="form-group">
       <label for="inputUsername">Username</label>

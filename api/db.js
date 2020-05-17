@@ -484,7 +484,7 @@ export async function search(term, pagination) {
 
 export async function validate_account(username, password) {
 	try {
-		const data = await pool.query('SELECT id, passhash FROM accounts WHERE username=$1', [username]);
+		const data = await pool.query('SELECT id, passhash FROM accounts WHERE username=$1 and gm=true', [username]);
 
 		if (data.rows.length === 0) {
 			return undefined;
