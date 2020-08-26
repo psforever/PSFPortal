@@ -8,18 +8,7 @@ import api from './api/index.js'
 import { start_server_polling } from './api/psadmin.js'
 import * as db from './api/db.js'
 
-const envresult = dotenv.config();
-
-if (envresult.error) {
-	const err = envresult.error;
-
-	if (err.code == 'ENOENT') {
-		console.log("FATAL: your .env file is missing!")
-		process.exit(1);
-	} else {
-		throw envresult.error;
-	}
-}
+dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 const MODE = process.env.NODE_ENV || 'development';
@@ -48,20 +37,20 @@ if (process.env.TRUST_PROXY) {
 	await start_server_polling()
 
 	const pgSession = connectPg(session);
-	 
-	const sessionMiddleware= session({
-	  store: new pgSession({
-		pool : db.pool,
-		tableName : 'session'
-	  }),
-	  secret: process.env.COOKIE_SECRET, // changing this will invalidate all sessions
-	  resave: false, // dont bother saving unchanged sessions
-	  saveUninitialized: false, // dont bother saving sessions that have no data
-	  cookie: {
-		  httpOnly: true,
-		  maxAge: 7 * 24 * 60 * 60 * 1000,
-		  //secure: true, // TODO: only send cookie over https
-	  } // 7 days
+
+	const sessionMiddleware = session({
+		store: new pgSession({
+			pool: db.pool,
+			tableName: 'session'
+		}),
+		secret: process.env.COOKIE_SECRET, // changing this will invalidate all sessions
+		resave: false, // dont bother saving unchanged sessions
+		saveUninitialized: false, // dont bother saving sessions that have no data
+		cookie: {
+			httpOnly: true,
+			maxAge: 7 * 24 * 60 * 60 * 1000,
+			//secure: true, // TODO: only send cookie over https
+		} // 7 days
 	})
 
 	// All API requests have a session. Other requests are static
@@ -77,7 +66,7 @@ if (process.env.TRUST_PROXY) {
 	// redirect work properly. If the app makes it this far, it will be an Express 404
 	app.use(express.static('public'));
 
-	app.listen(PORT, function() {
+	app.listen(PORT, function () {
 		let url = '';
 
 		if (MODE === 'development') {
