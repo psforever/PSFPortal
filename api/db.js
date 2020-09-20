@@ -59,6 +59,17 @@ export const CHARACTER = Object.freeze({
 	DELETED: Symbol("deleted"),
 });
 
+// Added for Avatar
+// Only utilizing columns believed to be "safe"
+// Should be reviewed at a later date
+export const AVATAR = Object.freeze({
+	THIS: Symbol("experience"),
+	ID: Symbol("id"),
+	NAME: Symbol("name"),
+	BEP: Symbol("bep"),
+	CEP: Symbol("cep"),
+});
+
 export const LOGIN = Object.freeze({
 	THIS: Symbol("login"),
 	ID: Symbol("id"),
