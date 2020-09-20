@@ -59,6 +59,17 @@ export const CHARACTER = Object.freeze({
 	DELETED: Symbol("deleted"),
 });
 
+// Added for Avatar
+// Only utilizing columns believed to be "safe"
+// Should be reviewed at a later date
+export const AVATAR = Object.freeze({
+	THIS: Symbol("experience"),
+	ID: Symbol("id"),
+	NAME: Symbol("name"),
+	BEP: Symbol("bep"),
+	CEP: Symbol("cep"),
+});
+
 export const LOGIN = Object.freeze({
 	THIS: Symbol("login"),
 	ID: Symbol("id"),
@@ -286,6 +297,22 @@ export async function get_characters(pagination, sort, order) {
 
 		pagination.item_count = char_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
+
+		return chars.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+// Database action added for the sake of reporting avatar information out to a publicly exposed API route for leader-boards and other components.
+export async function get_character_batch_for_stats(batch, sort, order) {
+	const values = [batch];
+
+	try {
+		const char_count = await get_row_count(CHARACTER.THIS);
+		const chars = await pool.query(`SELECT id, name, faction_id, bep, cep FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1*1000 LIMIT 1000`, values);
 
 		return chars.rows;
 	} catch (e) {
