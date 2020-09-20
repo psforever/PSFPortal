@@ -295,6 +295,22 @@ export async function get_characters(pagination, sort, order) {
 	}
 }
 
+// Database action added for the sake of reporting avatar information out to a publicly exposed API route for leader-boards and other components.
+export async function get_character_batch_for_stats(batch, sort, order) {
+	const values = [batch];
+
+	try {
+		const char_count = await get_row_count(CHARACTER.THIS);
+		const chars = await pool.query(`SELECT id, name, faction_id, bep, cep FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1*1000 LIMIT 1000`, values);
+
+		return chars.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
 export async function get_characters_by_account(account_id) {
 	try {
 		const characters = await pool.query('SELECT * FROM avatar WHERE account_id=$1 AND deleted=false', [account_id])
