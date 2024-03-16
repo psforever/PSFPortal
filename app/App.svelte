@@ -26,6 +26,8 @@ import BadRoute from './views/BadRoute.svelte';
 import UserList from './views/UserList.svelte';
 import AdminPanel from './views/AdminPanel.svelte';
 import CharacterList from './views/CharacterList.svelte';
+import Leaderboard from './views/Leaderboard.svelte';
+import Avatar from './views/Avatar.svelte'
 
 // Defined by webpack
 let APP_VERSION = __VERSION__;
@@ -99,6 +101,8 @@ function setRoute(r, initialState) {
 page("/", setRoute(Home, true));
 page("/login", setRoute(Login, true));
 page("/register", setRoute(Register));
+page("/leaderboard", setRoute(Leaderboard));
+page("/avatar/:id", setRoute(Avatar));
 page("/admin", setRoute(AdminPanel));
 page("/profile", setRoute(Profile, true));
 page("/user/:id", setRoute(Profile, true));

@@ -62,4 +62,16 @@ api.get('/user/:user/logins', NEED_SESSION, async (req, res, next) => {
 	}
 });
 
+api.get('/avatar/:avatar/weaponstats', async (req, res, next) => {
+	const avatar = req.params.avatar;
+
+	try {
+		const weapons = await db.get_weaponstats_by_avatar(avatar);
+		res.status(200).json({ weapons: weapons });
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
 export default api;
