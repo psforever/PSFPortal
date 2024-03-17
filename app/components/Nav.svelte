@@ -18,6 +18,9 @@
 				<li class="nav-item" class:active={route=="/"}>
 					<a class="nav-link" href="/">Server Status</a>
 				</li>
+				<li class="nav-item" class:active={route=="/leaderboard"}>
+                					<a class="nav-link" href="/leaderboard">Leaderboard</a>
+                </li>
 				{#if $isAdmin}
 				<li class="nav-item" class:active={route=="/admin"}>
 					<a class="nav-link" style="color: red;" href="/admin">Admin Panel</a>

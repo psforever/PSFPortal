@@ -70,6 +70,16 @@ export const AVATAR = Object.freeze({
 	CEP: Symbol("cep"),
 });
 
+export const WEAPONSTAT = Object.freeze({
+	THIS: Symbol("weapon"),
+	ID: Symbol("avatar_id"),
+	WEAPON: Symbol("weapon_id"),
+	SHOTS_FIRED: Symbol("shots_fired"),
+	SHOTS_LANDED: Symbol("shots_landed"),
+	KILLS: Symbol("kills"),
+	ASSISTS: Symbol("assists")
+});
+
 export const LOGIN = Object.freeze({
 	THIS: Symbol("login"),
 	ID: Symbol("id"),
@@ -315,6 +325,17 @@ export async function get_character_batch_for_stats(batch, sort, order) {
 		const chars = await pool.query(`SELECT id, name, faction_id, bep, cep FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1*1000 LIMIT 1000`, values);
 
 		return chars.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_weaponstats_by_avatar(id) {
+	try {
+		const weapons = await pool.query('SELECT * FROM weaponstat WHERE avatar_id=$1 ORDER BY kills DESC', [id])
+		return weapons.rows;
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]
