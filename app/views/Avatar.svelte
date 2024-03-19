@@ -6,12 +6,13 @@
   import { selectedPlayer } from '../player';
 
   onMount(() => {
-  get_weaponStats();
+  get_iWeaponStats();
   });
 
   let player; // Define player variable to hold player data
-  let weapons = [];
+  let iWeapons = [];
   let alert;
+  let iWeaponsKillsSum
 
   // Subscribe to the selectedPlayer store to get the selected player data
   selectedPlayer.subscribe(value => {
@@ -20,11 +21,42 @@
 
   const url = "/api/avatar/"+$selectedPlayer.id+"/weaponstats"
 
-  async function get_weaponStats() {
+  async function get_iWeaponStats() {
     try {
+      const ids = [55, 56, 57, 140, 146, 175, 233, 299, 304, 324, 334, 345, 396, 406,
+      407, 411, 425, 429, 462, 468, 556, 587, 588, 589, 599, 673, 680, 701, 706, 714,
+      716, 730, 737, 817, 838, 845, 864, 888, 889, 890, 968, 969, 970];
       const resp = await axios.get(url);
       const stats = resp.data;
-      weapons = stats.weapons;
+      const filteredWeapons = stats.weapons.filter(weapon => {
+      return ids.includes(weapon.weapon_id);
+      });
+
+      filteredWeapons.forEach(weapon => {
+            switch (weapon.weapon_id) {
+              case 304:
+                weapon.shots_fired = Math.ceil(weapon.shots_fired / 36);
+                weapon.shots_landed = Math.ceil(weapon.shots_landed / 8);
+                break;
+              case 411:
+                weapon.shots_fired = Math.ceil(weapon.shots_fired / 21);
+                weapon.shots_landed = Math.ceil(weapon.shots_landed / 6);
+                break;
+              case 588:
+                weapon.shots_fired = Math.ceil(weapon.shots_fired / 55);
+                weapon.shots_landed = Math.ceil(weapon.shots_landed / 10);
+                break;
+              case 714:
+                weapon.shots_fired = Math.ceil(weapon.shots_fired / 36);
+                weapon.shots_landed = Math.ceil(weapon.shots_landed / 8);
+                break;
+              default:
+                break;
+            }
+          });
+
+      iWeapons = filteredWeapons;
+      iWeaponsKillsSum = iWeapons.reduce((total, weapon) => total + weapon.kills, 0);
       // Reset alert message if needed
       alert.message("");
       } catch (e) {
@@ -249,8 +281,8 @@ const weaponNames = [
         </tr>
   </tbody>
 </table>
-  <span style="color:lightgrey;">Command Rank:</span> {$selectedPlayer.cr}<br>
   <span style="color:lightgrey;">Battle Rank:</span> {$selectedPlayer.br}<br>
+  <span style="color:lightgrey;">Command Rank:</span> {$selectedPlayer.cr}<br>
    </td>
    </tr>
   </tbody>
@@ -266,9 +298,9 @@ const weaponNames = [
       <th>Accuracy</th>
   </thead>
   <tbody>
-    {#each weapons as weapon}
+    {#each iWeapons as weapon}
       <tr>
-        <td>{getWeaponName(weapon.weapon_id)} {weapon.weapon_id}</td>
+        <td>{getWeaponName(weapon.weapon_id)}</td>
         <td>{weapon.kills}</td>
         <td>{weapon.assists}</td>
         <td>{weapon.shots_fired}</td>
@@ -278,3 +310,4 @@ const weaponNames = [
     {/each}
   </tbody>
  </table>
+ <span style="color:lightgrey;">Total Kills: </span>{iWeaponsKillsSum}
