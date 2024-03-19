@@ -80,6 +80,11 @@ export const WEAPONSTAT = Object.freeze({
 	ASSISTS: Symbol("assists")
 });
 
+export const KILLACTIVITY = Object.freeze({
+	THIS: Symbol("kill"),
+	ID: Symbol("killer_id"),
+});
+
 export const LOGIN = Object.freeze({
 	THIS: Symbol("login"),
 	ID: Symbol("id"),
@@ -336,6 +341,21 @@ export async function get_weaponstats_by_avatar(id) {
 	try {
 		const weapons = await pool.query('SELECT * FROM weaponstat WHERE avatar_id=$1 ORDER BY kills DESC', [id])
 		return weapons.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_killstats() {
+	try {
+		const kills = await pool.query('SELECT count(killactivity.killer_id), killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id' +
+         ' FROM killactivity' +
+         ' INNER JOIN avatar ON killactivity.killer_id = avatar.id' +
+         ' GROUP BY killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id' +
+         ' ORDER BY count(killer_id) DESC')
+		return kills.rows;
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]

@@ -8,10 +8,12 @@
   onMount(() => {
   get_BEPleaderboard();
   get_CEPleaderboard();
+  get_kills();
   });
 
   let bepPlayers = [];
   let cepPlayers = [];
+  let kills = [];
   let alert;
 
   async function get_BEPleaderboard() {
@@ -27,18 +29,31 @@
     }
   }
 
-    async function get_CEPleaderboard() {
-      try {
-        const resp = await axios.get("/api/char_stats_cep/0");
-        const stats = resp.data;
-        cepPlayers = stats.players;
-        // Reset alert message if needed
-        alert.message("");
-      } catch (e) {
-        console.log(e);
-        alert.message("Failed to fetch stats from server");
-      }
+  async function get_CEPleaderboard() {
+    try {
+      const resp = await axios.get("/api/char_stats_cep/0");
+      const stats = resp.data;
+      cepPlayers = stats.players;
+      // Reset alert message if needed
+      alert.message("");
+    } catch (e) {
+      console.log(e);
+      alert.message("Failed to fetch stats from server");
     }
+  }
+
+  async function get_kills() {
+    try {
+      const resp = await axios.get("/api/char_stats_kills");
+      const stats = resp.data;
+      kills = stats.kills;
+      // Reset alert message if needed
+      alert.message("");
+    } catch (e) {
+      console.log(e);
+      alert.message("Failed to fetch stats from server");
+    }
+  }
 
   // Define battle rank ranges
   const rankRanges = [
@@ -115,20 +130,24 @@
       return 40;
   }
 
-   // Function to calculate rank based on CEP
-    function calculateCrRank(cep) {
-        // Iterate through rank ranges to find the appropriate rank
-        for (const range of crRankRanges) {
-            if (cep >= range.minCEP && cep <= range.maxCEP) {
-                return range.rank;
-            }
-        }
-        // Default rank if CEP doesn't match any range
-        return 5;
-    }
+  // Function to calculate rank based on CEP
+  function calculateCrRank(cep) {
+      // Iterate through rank ranges to find the appropriate rank
+      for (const range of crRankRanges) {
+          if (cep >= range.minCEP && cep <= range.maxCEP) {
+              return range.rank;
+          }
+      }
+      // Default rank if CEP doesn't match any range
+      return 5;
+  }
 
   const handleClick = (clickedPlayer) => {
   selectedPlayer.set({id: clickedPlayer.id, name: clickedPlayer.name, faction_id: clickedPlayer.faction_id, br: calculateRank(clickedPlayer.bep), cr: calculateCrRank(clickedPlayer.cep)});
+};
+
+  const handleKillClick = (clickedPlayer) => {
+  selectedPlayer.set({id: clickedPlayer.killer_id, name: clickedPlayer.name, faction_id: clickedPlayer.faction_id, br: calculateRank(clickedPlayer.bep), cr: calculateCrRank(clickedPlayer.cep)});
 };
 
 </script>
@@ -140,18 +159,18 @@
 
 <ul class="nav nav-tabs mb-3" id="nav-tab" role="tablist">
   <li class="nav-item">
-    <a class="nav-link active" id="br-tab" data-toggle="tab" href="#br" role="tab" aria-controls="br" aria-selected="true">Battle Rank</a>
+    <a class="nav-link active" id="kills-tab" data-toggle="tab" href="#kills" role="tab" aria-controls="kills" aria-selected="true">Kills</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="br-tab" data-toggle="tab" href="#br" role="tab" aria-controls="br" aria-selected="false">Battle Rank</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" id="cr-tab" data-toggle="tab" href="#cr" role="tab" aria-controls="cr" aria-selected="false">Command Rank</a>
   </li>
-  <li class="nav-item">
-    <a class="nav-link" id="kills-tab" data-toggle="tab" href="#kills" role="tab" aria-controls="kills" aria-selected="false">Kills</a>
-  </li>
 </ul>
 
 <div class="tab-content" id="tabs-tabContent">
-  <div class="tab-pane show active" id="br" role="tabpanel" aria-labelledby="br-tab">
+  <div class="tab-pane" id="br" role="tabpanel" aria-labelledby="br-tab">
  <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
   <thead class="thead-light">
       <th>#</th>
@@ -174,7 +193,8 @@
   </tbody>
  </table>
 </div>
-    <div class="tab-pane" id="cr" role="tabpanel" aria-labelledby="cr-tab">
+
+<div class="tab-pane" id="cr" role="tabpanel" aria-labelledby="cr-tab">
     <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
       <thead class="thead-light">
           <th>#</th>
@@ -194,10 +214,33 @@
             <td>{calculateCrRank(player.cep)}</td>
           </tr>
         {/each}
-      </tbody>
-    </table>
-    </div>
-    <div class="tab-pane" id="kills" role="tabpanel" aria-labelledby="kills-tab">
+     </tbody>
+  </table>
+</div>
 
-    </div>
-  </div>
+<div class="tab-pane show active" id="kills" role="tabpanel" aria-labelledby="kills-tab">
+    <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
+      <thead class="thead-light">
+          <th>#</th>
+          <th>Name</th>
+          <th>Kills</th>
+          <th>BR</th>
+          <th>CR</th>
+      </thead>
+      <tbody>
+        {#each kills as killer, $index}
+          <tr>
+            <td>{$index + 1}</td>
+            <td>
+            <img height="24" src={getFactionIcon(killer.faction_id)} alt={killer.faction_id} />
+            <a href="/avatar/{killer.killer_id}" on:click={() => handleKillClick(killer)}>{killer.name}</a>
+            </td>
+            <td>{killer.count}</td>
+            <td>{calculateRank(killer.bep)}</td>
+            <td>{calculateCrRank(killer.cep)}</td>
+          </tr>
+        {/each}
+     </tbody>
+  </table>
+</div>
+</div>

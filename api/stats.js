@@ -58,4 +58,14 @@ api.get('/char_stats_cep/:batch', async (req, res, next) => {
     }
 });
 
+api.get('/char_stats_kills', async (req, res, next) => {
+	try {
+		const kills = await db.get_killstats();
+		res.status(200).json({ kills: kills });
+	} catch (e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
 export default api;
