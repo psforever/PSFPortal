@@ -399,7 +399,7 @@ export async function get_top_kills_byDate() {
         ' killer_id, DATE(timestamp) AS kill_date, ROW_NUMBER() OVER (PARTITION BY killer_id ORDER BY COUNT(*) DESC)::int AS row_num' +
         ' FROM killactivity GROUP BY killer_id, DATE(timestamp)) SELECT rk.kill_count, rk.killer_id,' +
         " TO_CHAR(rk.kill_date, 'FMMon DD, YYYY') AS f_kill_date, rk.row_num, av.name, av.faction_id FROM RankedKills rk" +
-        ' JOIN avatar av ON rk.killer_id = av.id WHERE rk.row_num = 1 ORDER BY rk.kill_count DESC LIMIT 30')
+        ' JOIN avatar av ON rk.killer_id = av.id WHERE rk.row_num = 1 ORDER BY rk.kill_count DESC LIMIT 50')
 		return kills.rows;
 	} catch (e) {
 		if (e.code)

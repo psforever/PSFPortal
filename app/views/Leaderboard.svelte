@@ -167,6 +167,7 @@
 </div>
 
   <div class="tab-pane" id="top" role="tabpanel" aria-labelledby="top-tab">
+  <span style="color:lightgrey; text-align:center;">Top 50 Characters Most Daily Kills</span>
  <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
   <thead class="thead-light">
       <th>#</th>
