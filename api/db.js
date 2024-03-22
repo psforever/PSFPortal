@@ -68,6 +68,8 @@ export const AVATAR = Object.freeze({
 	NAME: Symbol("name"),
 	BEP: Symbol("bep"),
 	CEP: Symbol("cep"),
+	GENDER: Symbol("gender_id"),
+	HEAD: Symbol("head_id"),
 });
 
 export const WEAPONSTAT = Object.freeze({
@@ -348,13 +350,56 @@ export async function get_weaponstats_by_avatar(id) {
 	}
 }
 
-export async function get_killstats() {
+export async function get_avatar(id) {
 	try {
-		const kills = await pool.query('SELECT count(killactivity.killer_id), killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id' +
+		const avatar = await pool.query('SELECT id, name, faction_id, bep, cep, gender_id, head_id FROM avatar WHERE id=$1', [id])
+		return avatar.rows[0];
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_top_kills() {
+	try {
+		const kills = await pool.query('SELECT count(killactivity.killer_id), killactivity.killer_id, avatar.name, avatar.bep,' +
+		 ' avatar.cep, avatar.faction_id, avatar.gender_id, avatar.head_id' +
          ' FROM killactivity' +
          ' INNER JOIN avatar ON killactivity.killer_id = avatar.id' +
-         ' GROUP BY killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id' +
+         ' GROUP BY killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id, avatar.gender_id, avatar.head_id' +
          ' ORDER BY count(killer_id) DESC')
+		return kills.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_avatar_kd_byDate(id) {
+	try {
+		const kd = await pool.query("SELECT TO_CHAR(timestamp, 'FMMon DD, YYYY') AS date," +
+        ' SUM(CASE WHEN killer_id = $1 THEN 1 ELSE 0 END)::int AS kills,' +
+        ' SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END)::int AS deaths' +
+        ' FROM killactivity GROUP BY date HAVING' +
+        ' SUM(CASE WHEN killer_id = $1 THEN 1 ELSE 0 END) > 0 OR SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END) > 0' +
+        ' ORDER BY date DESC', [id])
+		return kd.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_top_kills_byDate() {
+	try {
+		const kills = await pool.query('WITH RankedKills AS (SELECT COUNT(*)::int AS kill_count,' +
+        ' killer_id, DATE(timestamp) AS kill_date, ROW_NUMBER() OVER (PARTITION BY killer_id ORDER BY COUNT(*) DESC)::int AS row_num' +
+        ' FROM killactivity GROUP BY killer_id, DATE(timestamp)) SELECT rk.kill_count, rk.killer_id,' +
+        " TO_CHAR(rk.kill_date, 'FMMon DD, YYYY') AS f_kill_date, rk.row_num, av.name, av.faction_id FROM RankedKills rk" +
+        ' JOIN avatar av ON rk.killer_id = av.id WHERE rk.row_num = 1 ORDER BY rk.kill_count DESC LIMIT 30')
 		return kills.rows;
 	} catch (e) {
 		if (e.code)
