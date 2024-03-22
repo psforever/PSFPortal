@@ -384,7 +384,7 @@ export async function get_avatar_kd_byDate(id) {
         ' SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END)::int AS deaths' +
         ' FROM killactivity GROUP BY date HAVING' +
         ' SUM(CASE WHEN killer_id = $1 THEN 1 ELSE 0 END) > 0 OR SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END) > 0' +
-        ' ORDER BY date DESC', [id])
+        ' ORDER BY MIN(timestamp) DESC', [id])
 		return kd.rows;
 	} catch (e) {
 		if (e.code)
