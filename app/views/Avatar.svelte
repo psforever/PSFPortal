@@ -15,10 +15,12 @@
 
   let iWeapons = [];
   let vehicles = [];
+  let deployables = [];
   let alert;
   let avatar = {};
   let iWeaponsKillsSum
   let vehicleKillsSum
+  let deployableKillsSum
   let kdByDate = [];
   let url = params.id || avatar.id
   let face;
@@ -60,7 +62,7 @@
 
   async function get_iWeaponStats() {
     try {
-      const ids = [55, 56, 57, 140, 146, 148, 175, 233, 299, 304, 324, 334, 345, 396, 406,
+      const ids = [55, 56, 57, 140, 146, 175, 233, 299, 304, 324, 334, 345, 396, 406,
       407, 411, 425, 429, 462, 468, 556, 587, 588, 589, 599, 673, 680, 701, 706, 714,
       716, 730, 737, 817, 838, 845, 864, 888, 889, 890, 968, 969, 970];
       const resp = await axios.get(weaponstatsUrl);
@@ -96,14 +98,23 @@
       iWeaponsKillsSum = iWeapons.reduce((total, weapon) => total + weapon.kills, 0);
 
       const vIds = [46, 60, 62, 66, 67, 68, 79, 83, 84, 118, 135, 179, 199, 200, 239, 259, 294, 335, 338,
-      353, 432, 441, 446, 459, 470, 480, 532, 572, 632, 642, 643, 671, 685, 686, 687, 688, 697,
-      707, 710, 741, 759, 784, 819, 825, 826, 847, 849, 860, 862, 865, 896, 898, 900, 923, 943, 986, 997];
+      353, 432, 441, 446, 459, 470, 480, 532, 572, 632, 642, 643, 671, 697,
+      707, 710, 741, 759, 784, 847, 860, 862, 865, 896, 898, 900, 923, 943, 986, 997];
       const filteredVehicles = stats.weapons.filter(weapon => {
       return vIds.includes(weapon.weapon_id);
       });
 
       vehicles = filteredVehicles;
       vehicleKillsSum = vehicles.reduce((total, weapon) => total + weapon.kills, 0);
+
+      const dIds = [148, 388, 685, 686, 687, 688, 819, 825, 826, 849];
+      const filteredDeployables = stats.weapons.filter(weapon => {
+      return dIds.includes(weapon.weapon_id);
+      });
+
+      deployables = filteredDeployables;
+      deployableKillsSum = deployables.reduce((total, weapon) => total + weapon.kills, 0);
+
       // Reset alert message if needed
       alert.message("");
       } catch (e) {
@@ -175,6 +186,7 @@
     {/each}
   </tbody>
  </table>
+
 <span style="color:lightgrey;">Kills by Vehicle - Total: </span>{vehicleKillsSum}
  <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
   <thead class="thead-light">
@@ -190,6 +202,23 @@
     {/each}
   </tbody>
  </table>
+
+<span style="color:lightgrey;">Kills by Deployable - Total: </span>{deployableKillsSum}
+<table class="table table-sm table-dark table-responsive-md table-striped table-hover">
+  <thead class="thead-light">
+      <th>Deployable</th>
+      <th>Kills</th>
+  </thead>
+  <tbody>
+    {#each deployables as ce}
+      <tr>
+        <td>{ce.weapon_id}</td>
+        <td>{ce.kills}</td>
+      </tr>
+    {/each}
+  </tbody>
+</table>
+
 <span style="color:lightgrey;">Daily Stats</span>
 <table class="table table-sm table-dark table-responsive-md table-striped table-hover">
   <thead class="thead-light">
