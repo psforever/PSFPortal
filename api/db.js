@@ -85,6 +85,7 @@ export const WEAPONSTAT = Object.freeze({
 export const KILLACTIVITY = Object.freeze({
 	THIS: Symbol("kill"),
 	ID: Symbol("killer_id"),
+	EXP: Symbol("exp")
 });
 
 export const LOGIN = Object.freeze({
@@ -367,6 +368,7 @@ export async function get_top_kills() {
 		 ' avatar.cep, avatar.faction_id, avatar.gender_id, avatar.head_id' +
          ' FROM killactivity' +
          ' INNER JOIN avatar ON killactivity.killer_id = avatar.id' +
+         ' WHERE exp > 0' +
          ' GROUP BY killactivity.killer_id, avatar.name, avatar.bep, avatar.cep, avatar.faction_id, avatar.gender_id, avatar.head_id' +
          ' ORDER BY count(killer_id) DESC')
 		return kills.rows;
@@ -382,7 +384,7 @@ export async function get_avatar_kd_byDate(id) {
 		const kd = await pool.query("SELECT TO_CHAR(timestamp, 'FMMon DD, YYYY') AS date," +
         ' SUM(CASE WHEN killer_id = $1 THEN 1 ELSE 0 END)::int AS kills,' +
         ' SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END)::int AS deaths' +
-        ' FROM killactivity GROUP BY date HAVING' +
+        ' FROM killactivity WHERE exp > 0 GROUP BY date HAVING' +
         ' SUM(CASE WHEN killer_id = $1 THEN 1 ELSE 0 END) > 0 OR SUM(CASE WHEN victim_id = $1 THEN 1 ELSE 0 END) > 0' +
         ' ORDER BY MIN(timestamp) DESC', [id])
 		return kd.rows;
@@ -397,7 +399,7 @@ export async function get_top_kills_byDate() {
 	try {
 		const kills = await pool.query('WITH RankedKills AS (SELECT COUNT(*)::int AS kill_count,' +
         ' killer_id, DATE(timestamp) AS kill_date, ROW_NUMBER() OVER (PARTITION BY killer_id ORDER BY COUNT(*) DESC)::int AS row_num' +
-        ' FROM killactivity GROUP BY killer_id, DATE(timestamp)) SELECT rk.kill_count, rk.killer_id,' +
+        ' FROM killactivity WHERE exp > 0 GROUP BY killer_id, DATE(timestamp)) SELECT rk.kill_count, rk.killer_id,' +
         " TO_CHAR(rk.kill_date, 'FMMon DD, YYYY') AS f_kill_date, rk.row_num, av.name, av.faction_id FROM RankedKills rk" +
         ' JOIN avatar av ON rk.killer_id = av.id WHERE rk.row_num = 1 ORDER BY rk.kill_count DESC LIMIT 50')
 		return kills.rows;
