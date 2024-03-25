@@ -100,7 +100,7 @@ You should see similar output:
 [0] Trusting proxy
 [0] Connected to the psql database at localhost
 [0] Starting PSAdmin polling for 127.0.0.1:51002
-[0] [MODE development] PSFWeb now accepting requests at http://localhost:8080/
+[0] [MODE development] PSFPortal now accepting requests at http://localhost:8080/
 [1] ℹ ｢wds｣: Project is running at http://dev.psforever.net:8081/
 [1] ℹ ｢wds｣: webpack output is served from /
 [1] ℹ ｢wds｣: Content not from webpack is served from /home/chord/PSFPortal/public
@@ -128,7 +128,7 @@ You should see similar output:
 (node:25327) ExperimentalWarning: The ESM module loader is experimental.
 WARNING: development server simulated delay active
 Connected to the psql database at localhost
-[MODE development] PSFWeb now accepting requests at http://localhost:8080/
+[MODE development] PSFPortal now accepting requests at http://localhost:8080/
 ```
 
 Please note that Webpack (dev) will proxy all API requests (/api) to the host `http://localhost:8080` (see the `devServer` key in [webpack.config.cjs](webpack.config.cjs)). This MUST match your backend server's (dev-server) listening port, which is by default 8080.
