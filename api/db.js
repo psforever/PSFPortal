@@ -262,7 +262,8 @@ export async function get_accounts_login_info(pagination, sort, filter) {
 		// this was a really hard query to get right...
 		// https://www.gab.lc/articles/better_faster_subqueries_postgresql/
 		const accounts = await pool.query(
-			'SELECT account.*, COALESCE(l.lastLogin, TIMESTAMP \'epoch\') as last_login, l2.ip_address FROM account' +
+			' SELECT account.*,' +
+			' COALESCE(l.lastLogin, TIMESTAMP \'epoch\') as last_login, l2.ip_address FROM account' +
 			' LEFT OUTER JOIN (' +
 			'   SELECT MAX(id) as loginId, account_id, MAX(login_time) as lastLogin' +
 			'   FROM login' +
@@ -297,6 +298,7 @@ export async function get_accounts_login_info(pagination, sort, filter) {
 			delete r.passhash;
 			delete r.username;
 			delete r.gm;
+			delete r.password;
 		});
 		return accounts.rows;
 	} catch (e) {
