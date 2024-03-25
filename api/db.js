@@ -262,7 +262,7 @@ export async function get_accounts_login_info(pagination, sort, filter) {
 		// this was a really hard query to get right...
 		// https://www.gab.lc/articles/better_faster_subqueries_postgresql/
 		const accounts = await pool.query(
-			'SELECT account.*, COALESCE(l.lastLogin, TIMESTAMP \'epoch\') as last_login, l2.ip_address, l2.canonical_hostname FROM account' +
+			'SELECT account.*, COALESCE(l.lastLogin, TIMESTAMP \'epoch\') as last_login, l2.ip_address FROM account' +
 			' LEFT OUTER JOIN (' +
 			'   SELECT MAX(id) as loginId, account_id, MAX(login_time) as lastLogin' +
 			'   FROM login' +
@@ -282,10 +282,11 @@ export async function get_accounts_login_info(pagination, sort, filter) {
 			r.admin = r.gm;
 
 			if (r.ip_address !== null) {
+			    const splitOctet = r.ip_address.split('.'); // Split IP address by '.'
+                const lastOctets = splitOctet.slice(-2).join('.');
 				r.last_login = {
 					time: r.last_login,
-					hostname: r.canonical_hostname,
-					ip: r.ip_address,
+					ip: lastOctets,
 				}
 			} else {
 				r.last_login = {}
@@ -527,7 +528,25 @@ export async function get_account_logins(account_id, pagination) {
 		pagination.item_count = login_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
 
+        logins.rows.forEach((r) => {
+
+			if (r.ip_address !== null) {
+			    const splitOctet = r.ip_address.split('.'); // Split IP address by '.'
+                const lastOctets = splitOctet.slice(-2).join('.');
+				r.ipAddress = {
+					ip: lastOctets,
+				}
+			} else {
+				r.last_login = {}
+			}
+
+			delete r.canonical_hostname;
+			delete r.hostname;
+			delete r.ip_address;
+		});
+
 		return logins.rows;
+
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]

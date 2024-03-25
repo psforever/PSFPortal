@@ -36,7 +36,7 @@
 	  {#each logins as login, i}
 		<tr>
 			<td>
-				<code>{login.hostname} - {login.ip_address}</code>
+				<code>{login.ipAddress.ip}</code>
 			</td>
 			<td>{moment(login.login_time).format('MMMM Do YYYY, h:mm:ss a')} ({moment(login.login_time).fromNow()})</td>
 		</tr>

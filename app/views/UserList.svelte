@@ -140,7 +140,7 @@
 			<td>{moment(user.created).fromNow()}</td>
 			<td>{#if user.last_login.time}
 					{moment(user.last_login.time).fromNow()}<br/>
-					<code>{user.last_login.hostname} - {user.last_login.ip}</code>
+					<code>{user.last_login.ip}</code>
 				{:else}
 					Never logged in
 				{/if}
