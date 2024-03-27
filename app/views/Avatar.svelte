@@ -212,7 +212,7 @@
   <tbody>
     {#each deployables as ce}
       <tr>
-        <td>{ce.weapon_id}</td>
+        <td>{getWeaponName(ce.weapon_id)}</td>
         <td>{ce.kills}</td>
       </tr>
     {/each}
