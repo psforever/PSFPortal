@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/psforever/PSFWeb#readme",
   "dependencies": {
-    "bcrypt": "^3.0.7",
+    "bcrypt": "^5.0.0",
     "connect-history-api-fallback": "^1.6.0",
     "connect-pg-simple": "^6.0.1",
     "dotenv": "^8.2.0",
