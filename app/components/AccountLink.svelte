@@ -19,6 +19,6 @@
 	{/if}
 
 	{#if account.admin}
-	<span class="badge badge-success">GM</span>
+	<span class="badge badge-success">Admin</span>
 	{/if}
 </span>

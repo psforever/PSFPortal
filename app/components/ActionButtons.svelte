@@ -25,7 +25,7 @@
 	data-account-id={account.id}
 	data-account-name={account.name}
 	data-toggle="modal"
-	data-target="#actionModal">Remove GM</button>
+	data-target="#actionModal">Remove Admin</button>
 {:else}
 <button type="button"
 	class="btn btn-success btn-sm"
@@ -33,6 +33,6 @@
 	data-account-id={account.id}
 	data-account-name={account.name}
 	data-toggle="modal"
-	data-target="#actionModal">Make GM</button>
+	data-target="#actionModal">Make Admin</button>
 {/if}
 {/if}

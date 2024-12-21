@@ -127,4 +127,64 @@ api.get('/characters', NEED_ADMIN, async (req, res, next) => {
 	}
 });
 
+api.get('/roles', NEED_ADMIN, async (req, res, next) => {
+	const pagination = get_pagination(req);
+
+	try {
+		const roles = await db.get_roles(pagination, db.CHARACTER.LAST_LOGIN, db.SQL_ORDER.DESCENDING);
+		res.status(200).json({ characters: roles, page: pagination})
+	} catch (e) {
+		console.log(e)
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.post('/roles/:avatar/add_gm', NEED_ADMIN, async (req, res, next) => {
+    const avatar = parseInt(req.params.avatar);
+
+	try {
+		await db.update_roles(avatar, {[db.AVATARMODEPERMISSION.GM] : true})
+		res.status(200).json({});
+	} catch(e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.post('/roles/:avatar/remove_gm', NEED_ADMIN, async (req, res, next) => {
+	const avatar = parseInt(req.params.avatar);
+
+	try {
+		await db.update_roles(avatar, {[db.AVATARMODEPERMISSION.GM] : false})
+		res.status(200).json({});
+	} catch(e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.post('/roles/:avatar/add_spectate', NEED_ADMIN, async (req, res, next) => {
+    const avatar = parseInt(req.params.avatar);
+
+	try {
+		await db.update_roles(avatar, {[db.AVATARMODEPERMISSION.SPECTATE] : true})
+		res.status(200).json({});
+	} catch(e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
+api.post('/roles/:avatar/remove_spectate', NEED_ADMIN, async (req, res, next) => {
+    const avatar = parseInt(req.params.avatar);
+
+	try {
+		await db.update_roles(avatar, {[db.AVATARMODEPERMISSION.SPECTATE] : false})
+		res.status(200).json({});
+	} catch(e) {
+		console.log(e);
+		res.status(500).json({ message: 'error' });
+	}
+});
+
 export default api;

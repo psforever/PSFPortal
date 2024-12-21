@@ -72,6 +72,13 @@ export const AVATAR = Object.freeze({
 	HEAD: Symbol("head_id"),
 });
 
+export const AVATARMODEPERMISSION = Object.freeze({
+	THIS: Symbol("avatarmodepermission"),
+	ID: Symbol("avatar_id"),
+	GM: Symbol("can_gm"),
+	SPECTATE: Symbol("can_spectate")
+});
+
 export const WEAPONSTAT = Object.freeze({
 	THIS: Symbol("weapon"),
 	ID: Symbol("avatar_id"),
@@ -314,12 +321,30 @@ export async function get_characters(pagination, sort, order) {
 
 	try {
 		const char_count = await get_row_count(CHARACTER.THIS);
-		const chars = await pool.query(`SELECT id, account_id, name, faction_id, created, last_login FROM avatar ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1 LIMIT $2`, values);
+		const chars = await pool.query(`SELECT id, account_id, name, faction_id, created, last_login, avatar_id, can_gm, can_spectate FROM avatar LEFT JOIN avatarmodepermission ON avatar_id = id ORDER BY ${to_sql(sort)} ${to_sql(order)} OFFSET $1 LIMIT $2`, values);
 
 		pagination.item_count = char_count;
 		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
 
 		return chars.rows;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function get_roles(pagination) {
+	const start_id = (pagination.page - 1) * pagination.items_per_page;
+	const values = [start_id, pagination.items_per_page];
+
+	try {
+		const roles = await pool.query(`SELECT avatar_id, can_spectate, can_gm, id, last_login, account_id, name FROM avatarmodepermission INNER JOIN avatar ON avatar_id = id WHERE can_gm = TRUE OR can_spectate = TRUE ORDER BY last_login DESC OFFSET $1 LIMIT $2`, values);
+		const char_count = roles.rowCount;
+		pagination.item_count = char_count;
+		pagination.page_count = Math.ceil(pagination.item_count / pagination.items_per_page);
+
+		return roles.rows;
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]
@@ -415,7 +440,7 @@ export async function get_top_kills_byDate() {
 
 export async function get_characters_by_account(account_id) {
 	try {
-		const characters = await pool.query('SELECT * FROM avatar WHERE account_id=$1 AND deleted=false', [account_id])
+		const characters = await pool.query('SELECT a.*, b.* FROM avatar a LEFT JOIN avatarmodepermission b ON a.id = b.avatar_id WHERE a.account_id = $1 AND a.deleted = false', [account_id])
 		return characters.rows;
 	} catch (e) {
 		if (e.code)
@@ -469,6 +494,31 @@ export async function update_account(account_id, fields) {
 	try {
 		const update_result = await pool.query(`UPDATE account ${to_sql(set.sql)} WHERE id=$${set.next_idx}`, set.values);
 		return update_result.rowCount;
+	} catch (e) {
+		if (e.code)
+			e.code = pg_error_inv[e.code]
+		throw e;
+	}
+}
+
+export async function update_roles(avatar_id, fields) {
+	if (fields === {}) {
+		return
+	}
+
+	const set = build_SET(fields);
+	set.values.push(avatar_id)
+	const checkExists = await pool.query(`SELECT avatar_id FROM avatarmodepermission WHERE avatar_id = $1`, [avatar_id]);
+
+	try {
+	let query;
+	  if (checkExists.rowCount > 0) {
+		await pool.query(`UPDATE avatarmodepermission ${to_sql(set.sql)} WHERE avatar_id=$${set.next_idx}`, set.values);
+		}
+		else {
+		await pool.query(`INSERT INTO avatarmodepermission (avatar_id) VALUES ($1)`, [avatar_id]);
+		await pool.query(`UPDATE avatarmodepermission ${to_sql(set.sql)} WHERE avatar_id=$${set.next_idx}`, set.values);
+		}
 	} catch (e) {
 		if (e.code)
 			e.code = pg_error_inv[e.code]
@@ -571,8 +621,8 @@ export async function search(term, pagination) {
 		const accounts = await pool.query('SELECT id, username, gm, inactive FROM account ' +
 			'WHERE upper(username) LIKE $1 ' +
 			` ORDER BY username OFFSET $2 LIMIT $3`, values);
-		const characters = await pool.query('SELECT id, name, account_id, faction_id FROM avatar ' +
-			'WHERE upper(name) LIKE $1 ' +
+		const characters = await pool.query('SELECT a.id, a.name, a.account_id, a.faction_id, b.avatar_id, b.can_spectate, b.can_gm FROM avatar a' +
+			' LEFT JOIN avatarmodepermission b ON a.id = b.avatar_id WHERE upper(a.name) LIKE $1 ' +
 			` ORDER BY name OFFSET $2 LIMIT $3`, values);
 
 		pagination.item_count = 100;

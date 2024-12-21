@@ -2,6 +2,7 @@
         import { onMount } from 'svelte'
 	import UserList from '../views/UserList'
 	import CharacterList from '../views/CharacterList'
+	import RoleList from '../views/RoleList'
 	import CharacterLink from '../components/CharacterLink'
 	import AccountLink from '../components/AccountLink'
         import { monitor_tabs } from '../util/navigation'
@@ -41,6 +42,9 @@
   <li class="nav-item">
     <a class="nav-link" id="characters-tab" data-toggle="tab" href="#characters" role="tab" aria-controls="profile" aria-selected="false">Characters</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="profile" aria-selected="false">Roles</a>
+  </li>
 </ul>
 
 <div class="tab-content" id="tabs-tabContent">
@@ -73,5 +77,8 @@
   </div>
   <div class="tab-pane" id="characters" role="tabpanel" aria-labelledby="characters-tab">
 	  <CharacterList setURLParam={true} {appAlert} />
+  </div>
+  <div class="tab-pane" id="roles" role="tabpanel" aria-labelledby="roles-tab">
+	  <RoleList setURLParam={true} {appAlert} />
   </div>
 </div>

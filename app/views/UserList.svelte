@@ -110,7 +110,7 @@
 			<div class="form-check">
 			  <input type="checkbox" class="form-check-input" name="gm" id="userFilterGM">
 			  <label class="form-check-label" for="userFilterGM">
-			    GM
+			    Admin
 			  </label>
 			</div>
 			<div class="form-check">
