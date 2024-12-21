@@ -10,7 +10,9 @@
 	import LoginList from '../components/LoginList'
 	import AccountLink from '../components/AccountLink'
 	import ActionButtons from '../components/ActionButtons'
+    import PermissionButtons from '../components/PermissionButtons'
 	import ActionModal from '../components/ActionModal.svelte'
+	import RoleModal from '../components/RoleModal.svelte'
 
 	export let pageCtx;
 	export let appAlert;
@@ -86,7 +88,7 @@
 	{#if characters.length >= 1}
 	<div class="row">
 	{#each characters as char, i}
-		<div class="col-md-4 col-12"><CharacterLink character={char} /></div>
+		<div class="col-md-4 col-12">{char.name} <PermissionButtons avatar={char} /></div>
 	{/each}
 	</div>
 	{:else}
@@ -101,3 +103,4 @@
 {/if}
 
 <ActionModal on:action={() => refresh()} />
+<RoleModal on:action={() => refresh()} />
