@@ -380,13 +380,25 @@ p {
    empire colours are reserved for empire-affiliated content.
    ============================================================ */
 [data-theme="psforever"] {
-  /* --- Empire palette (authentic) --- */
+  /* --- Empire palette (authentic primaries) --- */
   --color-tr:         #c82f1c;
   --color-tr-bright:  #e8472f;
   --color-nc:         #003e80;
   --color-nc-bright:  #2f7fe8;
   --color-vs:         #460e62;
   --color-vs-bright:  #8b5cf6;
+
+  /* --- Empire secondaries ---
+     Each empire pairs its primary with a secondary:
+       TR  red    + gunmetal grey
+       NC  blue   + gold/yellow
+       VS  purple + teal (also the global interaction colour, below) */
+  --color-tr-secondary:        #9aa5ad;
+  --color-tr-secondary-bright: #c3ced6;
+  --color-nc-secondary:        #f0c419;
+  --color-nc-secondary-bright: #ffd851;
+  --color-vs-secondary:        #34e0c8;
+  --color-vs-secondary-bright: #6cf5e2;
 
   /* --- Vanu teal: the interaction colour --- */
   --color-vanu:        #34e0c8;
@@ -446,6 +458,11 @@ p {
 [data-theme="psforever"] .faction-tr { color: var(--color-tr-bright); text-shadow: var(--text-glow-red); }
 [data-theme="psforever"] .faction-nc { color: var(--color-nc-bright); text-shadow: var(--text-glow-blue); }
 [data-theme="psforever"] .faction-vs { color: var(--color-vs-bright); }
+
+/* Empire secondaries, for accents/charts/badges alongside the primary */
+[data-theme="psforever"] .faction-tr-secondary { color: var(--color-tr-secondary-bright); }
+[data-theme="psforever"] .faction-nc-secondary { color: var(--color-nc-secondary-bright); }
+[data-theme="psforever"] .faction-vs-secondary { color: var(--color-vs-secondary-bright); }
 
 [data-theme="psforever"] .faction-tr-bg {
   background: linear-gradient(90deg, #010d1d 0%, rgba(158,38,23,1) 15%, rgba(200,47,28,1) 50%, rgba(158,38,23,1) 85%, #010d1d 100%);

@@ -39,7 +39,8 @@ api.post("/bad_route", async (req, res, next) => {
 	res.status(200).json({message : 'received'})
 });
 
-api.all('*', function(req, res){
+// Express 5 (path-to-regexp v8) requires wildcards to be named; a bare '*' throws.
+api.all('/*splat', function(req, res){
   res.status(404).json({message : 'Unknown API route'});
 });
 

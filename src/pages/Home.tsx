@@ -8,10 +8,14 @@ interface ServerInfo {
   players?: { name: string; faction_id: number }[]
 }
 
+/**
+ * Each empire renders its name in its primary colour and its figures in its
+ * secondary: TR red/gunmetal, NC blue/gold, VS purple/teal.
+ */
 const FACTIONS = [
-  { id: 2, key: 'tr', label: 'Terran Republic', cls: 'faction-tr' },
-  { id: 1, key: 'nc', label: 'New Conglomerate', cls: 'faction-nc' },
-  { id: 0, key: 'vs', label: 'Vanu Sovereignty', cls: 'faction-vs' }
+  { id: 2, key: 'tr', label: 'Terran Republic', cls: 'faction-tr', secondary: 'faction-tr-secondary' },
+  { id: 1, key: 'nc', label: 'New Conglomerate', cls: 'faction-nc', secondary: 'faction-nc-secondary' },
+  { id: 0, key: 'vs', label: 'Vanu Sovereignty', cls: 'faction-vs', secondary: 'faction-vs-secondary' }
 ] as const
 
 export function Home() {
@@ -59,7 +63,7 @@ export function Home() {
             return (
               <li key={f.key} className="flex items-center justify-between text-sm">
                 <span className={f.cls}>{f.label}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{count}</span>
+                <span className={`${f.secondary} tabular-nums`}>{count}</span>
               </li>
             )
           })}
