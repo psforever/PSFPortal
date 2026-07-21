@@ -1,7 +1,10 @@
 .DS_Store
 .env
 node_modules
-public/bundle.*
+
+# `public/` is now entirely Vite build output (sources live in src/, static/ and index.html)
+public/
+
 package-lock.json
 yarn.lock
 *swp
