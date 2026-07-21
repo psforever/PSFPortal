@@ -1,19 +1,15 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Nav } from '@/components/Nav'
 import { Panel } from '@/components/Panel'
+import { AdminPanel } from '@/pages/AdminPanel'
+import { Avatar } from '@/pages/Avatar'
 import { Home } from '@/pages/Home'
+import { Leaderboard } from '@/pages/Leaderboard'
+import { Login } from '@/pages/Login'
+import { Outfit } from '@/pages/Outfit'
+import { Profile } from '@/pages/Profile'
+import { Register } from '@/pages/Register'
 import { UserProvider, useUser } from '@/state/UserContext'
-
-/** Placeholder for views still to be ported from the Svelte app. */
-function Pending({ name }: { name: string }) {
-  return (
-    <Panel title={name}>
-      <p style={{ color: 'var(--text-muted)' }}>
-        Not yet ported from the previous portal.
-      </p>
-    </Panel>
-  )
-}
 
 function NotFound() {
   return (
@@ -36,14 +32,14 @@ function Shell() {
         {initialised && (
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Pending name="Login" />} />
-            <Route path="/register" element={<Pending name="Register" />} />
-            <Route path="/leaderboard" element={<Pending name="Leaderboard" />} />
-            <Route path="/avatar/:id" element={<Pending name="Avatar" />} />
-            <Route path="/admin" element={<Pending name="Admin Panel" />} />
-            <Route path="/profile" element={<Pending name="Profile" />} />
-            <Route path="/user/:id" element={<Pending name="User" />} />
-            <Route path="/outfit/:id" element={<Pending name="Outfit" />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/avatar/:id" element={<Avatar />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/user/:id" element={<Profile />} />
+            <Route path="/outfit/:id" element={<Outfit />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         )}

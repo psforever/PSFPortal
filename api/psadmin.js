@@ -66,18 +66,41 @@ async function get_player_list() {
 			client.destroy()
 		});
 
+		let settled = false;
+
 		client.on('data', function(data) {
 			try {
 				const info = JSON.parse(data);
+				settled = true;
 				resolve(info.player_list)
 			} catch (e) {
+				settled = true;
 				reject(new Error("Failed to parse PSFCI JSON response"))
 			} finally {
 				client.destroy(); // kill client after server's response
 			}
 		});
 
+		// If the peer closes without ever sending a response, settle anyway.
+		// Otherwise this promise never resolves, and because start_server_polling()
+		// awaits it during boot, the whole Express server would hang before
+		// listen() and exit as soon as the event loop drained. That happens
+		// whenever the admin port accepts a connection but nothing answers on it
+		// (e.g. Docker publishing a port the server only bound on loopback).
 		client.on('close', function() {
+			if (!settled) {
+				settled = true;
+				reject(new Error("PSAdmin closed the connection without responding"))
+			}
+		});
+
+		// Don't wait forever on a peer that accepts but never replies.
+		client.setTimeout(5000, function() {
+			if (!settled) {
+				settled = true;
+				reject(new Error("PSAdmin connection timed out"))
+			}
+			client.destroy();
 		});
 	});
 }

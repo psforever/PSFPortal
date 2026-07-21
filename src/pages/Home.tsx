@@ -1,37 +1,26 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Panel } from '@/components/Panel'
 import { api } from '@/lib/api'
-
-/** Shape returned by GET /api/info — the PSAdmin-polled server status. */
-interface ServerInfo {
-  status?: string
-  players?: { name: string; faction_id: number }[]
-}
-
-/**
- * Each empire renders its name in its primary colour and its figures in its
- * secondary: TR red/gunmetal, NC blue/gold, VS purple/teal.
- */
-const FACTIONS = [
-  { id: 2, key: 'tr', label: 'Terran Republic', cls: 'faction-tr', secondary: 'faction-tr-secondary' },
-  { id: 1, key: 'nc', label: 'New Conglomerate', cls: 'faction-nc', secondary: 'faction-nc-secondary' },
-  { id: 0, key: 'vs', label: 'Vanu Sovereignty', cls: 'faction-vs', secondary: 'faction-vs-secondary' }
-] as const
+import { EMPIRES, factionClass } from '@/lib/factions'
+import type { Stats } from '@/lib/types'
 
 export function Home() {
-  const [info, setInfo] = useState<ServerInfo | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     api
-      .get<ServerInfo>('/info')
-      .then(setInfo)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Failed to load server info'))
+      .get<Stats>('/stats')
+      .then(setStats)
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : 'Failed to load server statistics')
+      )
   }, [])
 
-  const players = info?.players ?? []
-  const online = players.length
-  const up = info?.status === 'UP'
+  const up = stats?.status === 'UP'
+  const online = stats?.players?.length ?? 0
+  const last = stats?.last?.character
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
@@ -47,7 +36,7 @@ export function Home() {
                 textShadow: up ? 'var(--text-glow-teal)' : undefined
               }}
             >
-              {info ? (up ? 'ONLINE' : 'OFFLINE') : '…'}
+              {stats ? (up ? 'ONLINE' : 'OFFLINE') : '…'}
             </span>
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
               {online} {online === 1 ? 'player' : 'players'} connected
@@ -58,16 +47,58 @@ export function Home() {
 
       <Panel title="Empire Population">
         <ul className="space-y-2">
-          {FACTIONS.map((f) => {
-            const count = players.filter((p) => p.faction_id === f.id).length
-            return (
-              <li key={f.key} className="flex items-center justify-between text-sm">
-                <span className={f.cls}>{f.label}</span>
-                <span className={`${f.secondary} tabular-nums`}>{count}</span>
-              </li>
-            )
-          })}
+          {EMPIRES.map((f) => (
+            <li key={f.key} className="flex items-center justify-between text-sm">
+              <span className={f.cls}>{f.name}</span>
+              <span className={`${f.secondaryCls} tabular-nums`}>
+                {stats?.empires?.[f.key as 'TR' | 'NC' | 'VS'] ?? 0}
+              </span>
+            </li>
+          ))}
         </ul>
+      </Panel>
+
+      <Panel title="Online Players">
+        {online === 0 ? (
+          <p style={{ color: 'var(--text-muted)' }}>No players are currently online.</p>
+        ) : (
+          <ul className="space-y-1 text-sm">
+            {stats?.players?.map((p) => (
+              <li key={p.id}>
+                <Link to={`/avatar/${p.id}`} className={factionClass(p.faction_id)}>
+                  {p.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+
+      <Panel title="Database">
+        <dl className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <dt style={{ color: 'var(--text-muted)' }}>Accounts</dt>
+            <dd className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+              {stats?.accounts ?? '…'}
+            </dd>
+          </div>
+          <div className="flex justify-between">
+            <dt style={{ color: 'var(--text-muted)' }}>Characters</dt>
+            <dd className="tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+              {stats?.characters ?? '…'}
+            </dd>
+          </div>
+          {last && (
+            <div className="flex justify-between">
+              <dt style={{ color: 'var(--text-muted)' }}>Newest character</dt>
+              <dd>
+                <Link to={`/avatar/${last.id}`} className={factionClass(last.faction_id)}>
+                  {last.name}
+                </Link>
+              </dd>
+            </div>
+          )}
+        </dl>
       </Panel>
     </div>
   )
