@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ContinentList } from '@/components/ContinentList'
 import { EmpireStats } from '@/components/EmpireStats'
 import { Panel } from '@/components/Panel'
 import { api } from '@/lib/api'
@@ -92,6 +93,10 @@ export function Home() {
           )}
         </dl>
       </Panel>
+
+      <div className="md:col-span-2">
+        <ContinentList />
+      </div>
     </div>
   )
 }

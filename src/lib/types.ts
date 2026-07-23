@@ -74,3 +74,45 @@ export interface Paginated<T> {
   total?: number
   page?: number
 }
+
+/** A facility placed on a continent (static/continents/mapNN.json). */
+export interface Facility {
+  id: number
+  name: string
+  type: string
+  category: 'major' | 'tower' | 'warpgate' | 'minor'
+  x: number
+  y: number
+  yaw: number
+  soi: number
+}
+
+/** Static continent layout (static/continents/mapNN.json). */
+export interface Continent {
+  number: number
+  base: string
+  name: string
+  terrain: {
+    cols: number
+    rows: number
+    cell: number
+    worldSize: number
+    water: [number, number][]
+    land: [number, number][]
+  }
+  facilities: Facility[]
+}
+
+/** static/continents/index.json */
+export interface ContinentSummary {
+  number: number
+  base: string
+  name: string
+  facilities: number
+}
+
+/** GET /api/continents/:zone/control — building local_id -> faction_id */
+export interface ControlResponse {
+  zone: number
+  control: Record<number, number>
+}

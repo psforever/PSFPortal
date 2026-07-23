@@ -6,6 +6,7 @@ import api_user from './user.js'
 import api_info from './info.js'
 import api_admin from './admin.js'
 import api_stats from './stats.js'
+import api_continents from './continents.js'
 
 const VERSION = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
 const api = express.Router();
@@ -25,6 +26,7 @@ api.use(bodyParser.urlencoded({ extended: true }));
 api.use(api_auth)
 api.use(api_info)
 api.use(api_stats)
+api.use(api_continents)
 
 // These calls are gated within their respective routers
 api.use(api_user)

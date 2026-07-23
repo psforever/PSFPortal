@@ -1,0 +1,62 @@
+[
+  {
+    "number": 1,
+    "base": "map01",
+    "name": "Solsar",
+    "facilities": 35
+  },
+  {
+    "number": 2,
+    "base": "map02",
+    "name": "Hossin",
+    "facilities": 41
+  },
+  {
+    "number": 3,
+    "base": "map03",
+    "name": "Cyssor",
+    "facilities": 56
+  },
+  {
+    "number": 4,
+    "base": "map04",
+    "name": "Ishundar",
+    "facilities": 53
+  },
+  {
+    "number": 5,
+    "base": "map05",
+    "name": "Forseral",
+    "facilities": 33
+  },
+  {
+    "number": 6,
+    "base": "map06",
+    "name": "Ceryshen",
+    "facilities": 44
+  },
+  {
+    "number": 7,
+    "base": "map07",
+    "name": "Esamir",
+    "facilities": 44
+  },
+  {
+    "number": 8,
+    "base": "map08",
+    "name": "Oshur",
+    "facilities": 36
+  },
+  {
+    "number": 9,
+    "base": "map09",
+    "name": "Searhus",
+    "facilities": 42
+  },
+  {
+    "number": 10,
+    "base": "map10",
+    "name": "Amerish",
+    "facilities": 41
+  }
+]
