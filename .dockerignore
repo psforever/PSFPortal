@@ -1,0 +1,10 @@
+# node_modules must be installed inside the image so bcrypt's native binary
+# matches the container platform, not copied from the (possibly Windows) host.
+node_modules
+public
+.git
+.env
+*.log
+# Legacy Svelte sources are kept for reference but are not part of the build.
+app
+scss

@@ -41,7 +41,11 @@ if (process.env.TRUST_PROXY) {
 	const sessionMiddleware = session({
 		store: new pgSession({
 			pool: db.pool,
-			tableName: 'session'
+			tableName: 'session',
+			// The PSForever database is provisioned by the server's Flyway
+			// migrations, which do not include the portal's session table.
+			// Create it on first run so a fresh database works out of the box.
+			createTableIfMissing: true
 		}),
 		secret: process.env.COOKIE_SECRET, // changing this will invalidate all sessions
 		resave: false, // dont bother saving unchanged sessions
