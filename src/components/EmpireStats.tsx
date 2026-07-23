@@ -22,11 +22,22 @@ const EMPIRES = FACTIONS.filter((f): f is typeof f & { key: Empire } =>
 )
 
 const BAR_LEFT: Record<Empire, string> = { TR: '10%', NC: '40%', VS: '70%' }
-const BAR_BG: Record<Empire, string> = {
-  TR: 'faction-tr-bg',
-  NC: 'faction-nc-bg',
-  VS: 'faction-vs-bg'
+
+/**
+ * Each bar is a vertical faction gradient (dim empire colour at the base,
+ * bright at the top, as if charged upward), notched at the top corners to
+ * match the panel geometry, and lit with a faction-coloured drop-shadow.
+ * `drop-shadow` is used rather than `box-shadow` so the glow follows the
+ * clip-path instead of being clipped away.
+ */
+const BAR: Record<Empire, { from: string; to: string; glow: string }> = {
+  TR: { from: 'var(--color-tr)', to: 'var(--color-tr-bright)', glow: 'var(--glow-tr)' },
+  NC: { from: 'var(--color-nc)', to: 'var(--color-nc-bright)', glow: 'var(--glow-nc)' },
+  VS: { from: 'var(--color-vs)', to: 'var(--color-vs-bright)', glow: 'var(--glow-vs)' }
 }
+
+// notch the two top corners, HUD-style
+const BAR_CLIP = 'polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%, 0 4px)'
 
 export function EmpireStats({ stats }: { stats: Record<Empire, number> }) {
   const total = stats.TR + stats.NC + stats.VS
@@ -82,19 +93,20 @@ export function EmpireStats({ stats }: { stats: Record<Empire, number> }) {
         {/* bars */}
         {EMPIRES.map((e) => {
           const key = e.key as Empire
+          const bar = BAR[key]
           return (
             <div
               key={key}
-              className={`${BAR_BG[key]} absolute bottom-0 text-center z-[1]`}
+              className="absolute bottom-0 text-center z-[1]"
               title={`${stats[key]} ${key}`}
               style={{
                 left: BAR_LEFT[key],
                 height: pct(key) * MAX_BAR_HEIGHT,
                 minWidth: 48,
                 minHeight: '2.75em',
-                borderTop: '1px solid var(--border-active)',
-                borderLeft: '1px solid var(--border)',
-                borderRight: '1px solid var(--border)',
+                background: `linear-gradient(to top, ${bar.from} 0%, ${bar.to} 92%)`,
+                clipPath: BAR_CLIP,
+                filter: `drop-shadow(${bar.glow})`,
                 color: '#fff',
                 textShadow: '1px 1px 2px #000',
                 transition: 'height 1s cubic-bezier(0.33, 1, 0.68, 1)'

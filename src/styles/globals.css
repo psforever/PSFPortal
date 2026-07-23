@@ -405,6 +405,12 @@ p {
   --color-vanu-dim:    #1f9c8c;
   --color-vanu-bright: #6cf5e2;
 
+  /* Per-empire drop-shadow glows (single-shadow form, for use inside
+     `filter: drop-shadow(...)` so they respect a clip-path). */
+  --glow-tr: 0 0 6px rgba(232, 71, 47, 0.55);
+  --glow-nc: 0 0 6px rgba(47, 127, 232, 0.55);
+  --glow-vs: 0 0 6px rgba(139, 92, 246, 0.6);
+
   /* Remap the primitives the components actually consume.
      `green` is scificn's "active/primary" primitive -> Vanu teal. */
   --color-green:  #34e0c8;   /* active / primary  */
