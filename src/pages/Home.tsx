@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { EmpireStats } from '@/components/EmpireStats'
 import { Panel } from '@/components/Panel'
 import { api } from '@/lib/api'
-import { EMPIRES, factionClass } from '@/lib/factions'
+import { factionClass } from '@/lib/factions'
 import type { Stats } from '@/lib/types'
 
 export function Home() {
@@ -46,16 +47,7 @@ export function Home() {
       </Panel>
 
       <Panel title="Empire Population">
-        <ul className="space-y-2">
-          {EMPIRES.map((f) => (
-            <li key={f.key} className="flex items-center justify-between text-sm">
-              <span className={f.cls}>{f.name}</span>
-              <span className={`${f.secondaryCls} tabular-nums`}>
-                {stats?.empires?.[f.key as 'TR' | 'NC' | 'VS'] ?? 0}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <EmpireStats stats={stats?.empires ?? { TR: 0, NC: 0, VS: 0 }} />
       </Panel>
 
       <Panel title="Online Players">
