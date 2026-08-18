@@ -1,62 +1,209 @@
 [
   {
     "number": 1,
+    "zoneId": "z1",
     "base": "map01",
     "name": "Solsar",
-    "facilities": 35
+    "group": "continent",
+    "facilities": 35,
+    "empire": null
   },
   {
     "number": 2,
+    "zoneId": "z2",
     "base": "map02",
     "name": "Hossin",
-    "facilities": 41
+    "group": "continent",
+    "facilities": 41,
+    "empire": null
   },
   {
     "number": 3,
+    "zoneId": "z3",
     "base": "map03",
     "name": "Cyssor",
-    "facilities": 56
+    "group": "continent",
+    "facilities": 56,
+    "empire": null
   },
   {
     "number": 4,
+    "zoneId": "z4",
     "base": "map04",
     "name": "Ishundar",
-    "facilities": 53
+    "group": "continent",
+    "facilities": 53,
+    "empire": null
   },
   {
     "number": 5,
+    "zoneId": "z5",
     "base": "map05",
     "name": "Forseral",
-    "facilities": 33
+    "group": "continent",
+    "facilities": 33,
+    "empire": null
   },
   {
     "number": 6,
+    "zoneId": "z6",
     "base": "map06",
     "name": "Ceryshen",
-    "facilities": 44
+    "group": "continent",
+    "facilities": 44,
+    "empire": null
   },
   {
     "number": 7,
+    "zoneId": "z7",
     "base": "map07",
     "name": "Esamir",
-    "facilities": 44
+    "group": "continent",
+    "facilities": 44,
+    "empire": null
   },
   {
     "number": 8,
+    "zoneId": "z8",
     "base": "map08",
     "name": "Oshur",
-    "facilities": 36
+    "group": "continent",
+    "facilities": 36,
+    "empire": null
   },
   {
     "number": 9,
+    "zoneId": "z9",
     "base": "map09",
     "name": "Searhus",
-    "facilities": 42
+    "group": "continent",
+    "facilities": 42,
+    "empire": null
   },
   {
     "number": 10,
+    "zoneId": "z10",
     "base": "map10",
     "name": "Amerish",
-    "facilities": 41
+    "group": "continent",
+    "facilities": 41,
+    "empire": null
+  },
+  {
+    "number": 29,
+    "zoneId": "i1",
+    "base": "map99",
+    "name": "Extinction",
+    "group": "island",
+    "facilities": 15,
+    "empire": null
+  },
+  {
+    "number": 30,
+    "zoneId": "i2",
+    "base": "map98",
+    "name": "Ascension",
+    "group": "island",
+    "facilities": 18,
+    "empire": null
+  },
+  {
+    "number": 31,
+    "zoneId": "i3",
+    "base": "map97",
+    "name": "Desolation",
+    "group": "island",
+    "facilities": 13,
+    "empire": null
+  },
+  {
+    "number": 32,
+    "zoneId": "i4",
+    "base": "map96",
+    "name": "Nexus",
+    "group": "island",
+    "facilities": 9,
+    "empire": null
+  },
+  {
+    "number": 23,
+    "zoneId": "c1",
+    "base": "ugd01",
+    "name": "Supai",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 24,
+    "zoneId": "c2",
+    "base": "ugd02",
+    "name": "Hunhau",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 25,
+    "zoneId": "c3",
+    "base": "ugd03",
+    "name": "Adlivun",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 26,
+    "zoneId": "c4",
+    "base": "ugd04",
+    "name": "Byblos",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 27,
+    "zoneId": "c5",
+    "base": "ugd05",
+    "name": "Annwn",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 28,
+    "zoneId": "c6",
+    "base": "ugd06",
+    "name": "Drugaskan",
+    "group": "cavern",
+    "facilities": 10,
+    "empire": null
+  },
+  {
+    "number": 11,
+    "zoneId": "home1",
+    "base": "map11",
+    "name": "NC Sanctuary",
+    "group": "sanctuary",
+    "facilities": 16,
+    "empire": 1
+  },
+  {
+    "number": 12,
+    "zoneId": "home2",
+    "base": "map12",
+    "name": "TR Sanctuary",
+    "group": "sanctuary",
+    "facilities": 13,
+    "empire": 0
+  },
+  {
+    "number": 13,
+    "zoneId": "home3",
+    "base": "map13",
+    "name": "VS Sanctuary",
+    "group": "sanctuary",
+    "facilities": 13,
+    "empire": 2
   }
 ]
