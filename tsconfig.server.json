@@ -1,0 +1,27 @@
+{
+  "//": "Type-checks the Express backend (api/ + index.ts). The server runs as TypeScript directly on Node (>=24, native type stripping) with no build step, so this is check-only (noEmit). Typed at the boundaries; internal implicit-any is tolerated for a pragmatic conversion.",
+  "compilerOptions": {
+		// Node runs these files with strip-only type removal, so only erasable syntax is legal.
+		// Catches things like constructor parameter properties at typecheck instead of at boot.
+		"erasableSyntaxOnly": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["api", "index.ts", "types"]
+}

@@ -1,4 +1,4 @@
-import * as db from './db.js'
+import * as db from './db.ts'
 import assert from 'assert'
 
 export function get_pagination(req) {
@@ -102,7 +102,7 @@ export function get_filter(req, filter_spec) {
 
 
 		Object.getOwnPropertySymbols(constraint).forEach(key => {
-			assert(Object.keys(constraint) == 0 && typeof key == 'symbol',
+			assert(Object.keys(constraint).length == 0 && typeof key == 'symbol',
 				"filter constraint keys MUST be symbolic table columns")
 			filter.fields[key] = constraint[key];
 		});

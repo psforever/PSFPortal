@@ -3,14 +3,17 @@
   "version": "2.0.0",
   "type": "module",
   "description": "A web interface to PSForever servers.",
-  "main": "index.js",
+  "main": "index.ts",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "concurrently --kill-others \"npm:dev-client\" \"npm:dev-server\"",
     "dev-client": "vite",
-    "dev-server": "nodemon -w api/ -w index.js",
+    "dev-server": "node --watch index.ts",
     "build": "vite build",
-    "typecheck": "tsc --noEmit",
-    "prod-server": "cross-env NODE_ENV=production node index.js",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "prod-server": "cross-env NODE_ENV=production node index.ts",
     "production": "npm run build && npm run prod-server"
   },
   "repository": {
@@ -44,13 +47,19 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@types/bcrypt": "^5.0.2",
+    "@types/connect-history-api-fallback": "^1.5.4",
+    "@types/connect-pg-simple": "^7.0.3",
+    "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.0",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^26.1.1",
+    "@types/pg": "^8.11.10",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.0",
     "cross-env": "^7.0.3",
-    "nodemon": "^3.1.9",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"

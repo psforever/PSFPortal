@@ -4,9 +4,9 @@ import connectPg from 'connect-pg-simple'
 import morgan from 'morgan'
 import history from 'connect-history-api-fallback'
 import dotenv from 'dotenv'
-import api from './api/index.js'
-import { start_server_polling } from './api/psadmin.js'
-import * as db from './api/db.js'
+import api from './api/index.ts'
+import { start_server_polling } from './api/psadmin.ts'
+import * as db from './api/db.ts'
 
 dotenv.config();
 

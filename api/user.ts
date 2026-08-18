@@ -1,6 +1,6 @@
 import express from 'express'
-import * as db from './db.js'
-import { NEED_SESSION, get_pagination, fetch_user_middleware } from './util.js'
+import * as db from './db.ts'
+import { NEED_SESSION, get_pagination, fetch_user_middleware } from './util.ts'
 
 const api = express.Router();
 
