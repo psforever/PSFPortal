@@ -130,6 +130,70 @@
   100% { transform: translateY(-50%); }
 }
 
+/* Toast notifications slide in from the right. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast-in {
+  animation: toast-in 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-in {
+    animation: none;
+  }
+}
+
+/* Data skeletons: a faint tactical block with a teal light sweeping across, for values that aren't
+   available yet (server coming up, feed unreachable). */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--accent-primary) 22%, transparent) 50%,
+    transparent 100%
+  );
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
+}
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
+}
+
+/* Combat hotspot markers: fully opaque, fading out to transparent and back, in unison. */
+@keyframes hotspot-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.04; }
+}
+.hotspot-pulse {
+  animation: hotspot-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hotspot-pulse { animation: none; opacity: 0.85; }
+}
+
 /* ============================================================
    BASE RESET
    ============================================================ */
@@ -143,6 +207,10 @@
 html {
   font-size: 14px;
   -webkit-text-size-adjust: 100%;
+  /* Always reserve the vertical scrollbar's space so pages don't shift horizontally when a
+     scrollbar appears or disappears between routes. */
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
 }
 
 body {
@@ -386,7 +454,8 @@ p {
   --color-nc:         #003e80;
   --color-nc-bright:  #2f7fe8;
   --color-vs:         #460e62;
-  --color-vs-bright:  #8b5cf6;
+  /* Brightened from #8b5cf6: the muted violet read as too dim to recognise as VS on the portal. */
+  --color-vs-bright:  #c04dff;
 
   /* --- Empire secondaries ---
      Each empire pairs its primary with a secondary:
@@ -410,6 +479,19 @@ p {
   --glow-tr: 0 0 6px rgba(232, 71, 47, 0.55);
   --glow-nc: 0 0 6px rgba(47, 127, 232, 0.55);
   --glow-vs: 0 0 6px rgba(139, 92, 246, 0.6);
+
+  /* --- Continent map terrain --- ocean is the transparent SVG background. */
+  --land-fill:  #1b2530;   /* landmass body             */
+  --land-coast: #3d5b6e;   /* coastline stroke          */
+  --shallow-fill: #3d7f9e; /* wadeable shelf (light water) */
+  --lava-edge:  #d1451b;   /* lava molten edge / glow   */
+  --lava-core:  #ffb52e;   /* lava yellow-hot core      */
+  --bridge:     #c9b98f;   /* bridge decks (spans)      */
+  --road-fill:  #6b727a;   /* road network (faint)      */
+  --monolith:   #c9bda0;   /* monolith marker (stone)   */
+  --lattice:    #7f8c99;   /* facility lattice links    */
+  --crystal-fill: #7d6bd6; /* cavern pillar/crystal body */
+  --crystal-edge: #b9a8ff; /* cavern pillar/crystal edge */
 
   /* Remap the primitives the components actually consume.
      `green` is scificn's "active/primary" primitive -> Vanu teal. */
@@ -478,4 +560,33 @@ p {
 }
 [data-theme="psforever"] .faction-vs-bg {
   background: linear-gradient(90deg, #010d1d 0%, rgba(70,42,173,1) 15%, rgba(84,49,214,1) 50%, rgba(70,42,173,1) 85%, #010d1d 100%);
+}
+
+/* Vertical marquee for text in a fixed-height box.
+
+   Used where a panel must NOT change size with its content -- the loadout dialog's item detail, where
+   growing the panel would resize and re-centre the dialog around the very grid the pointer is on. The
+   box stays put and the overflowing text drifts up, then back down, rather than being clipped away
+   unread.
+
+   `--marquee-shift` is the negative overflow height and `--marquee-time` the duration, both set
+   inline by the component that measured them; `alternate` is what makes it travel back rather than
+   snapping to the top and repeating. */
+@keyframes marquee-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--marquee-shift, 0));
+  }
+}
+.marquee-y {
+  animation: marquee-y var(--marquee-time, 8s) ease-in-out infinite alternate;
+  /* Hold at each end so the text is readable before it starts moving back. */
+  animation-delay: 1s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-y {
+    animation: none;
+  }
 }
