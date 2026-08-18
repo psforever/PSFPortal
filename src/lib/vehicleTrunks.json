@@ -1,0 +1,191 @@
+{
+"_source": "PSF-LoginServer GlobalDefinitionsVehicle TrunkSize/TrunkOffset + InventoryTile (AGPL, PSForever project)",
+"_note": "internal vehicle name -> trunk grid in cells. `offset` is the slot index the trunk grid starts at (30 for every vehicle, unlike an exosuit's 6).",
+"vehicles": {
+"apc_nc": {
+"w": 20,
+"h": 16,
+"offset": 30
+},
+"apc_tr": {
+"w": 20,
+"h": 16,
+"offset": 30
+},
+"apc_vs": {
+"w": 20,
+"h": 16,
+"offset": 30
+},
+"aphelion_flight": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"aphelion_gunner": {
+"w": 15,
+"h": 18,
+"offset": 30
+},
+"aurora": {
+"w": 15,
+"h": 15,
+"offset": 30
+},
+"battlewagon": {
+"w": 15,
+"h": 15,
+"offset": 30
+},
+"colossus_flight": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"colossus_gunner": {
+"w": 15,
+"h": 18,
+"offset": 30
+},
+"dropship": {
+"w": 16,
+"h": 12,
+"offset": 30
+},
+"flail": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"fury": {
+"w": 11,
+"h": 11,
+"offset": 30
+},
+"galaxy_gunship": {
+"w": 18,
+"h": 16,
+"offset": 30
+},
+"liberator": {
+"w": 15,
+"h": 15,
+"offset": 30
+},
+"lightgunship": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"lightning": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"lodestar": {
+"w": 16,
+"h": 12,
+"offset": 30
+},
+"magrider": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"mediumtransport": {
+"w": 15,
+"h": 15,
+"offset": 30
+},
+"mosquito": {
+"w": 11,
+"h": 11,
+"offset": 30
+},
+"peregrine_flight": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"peregrine_gunner": {
+"w": 15,
+"h": 18,
+"offset": 30
+},
+"phantasm": {
+"w": 11,
+"h": 7,
+"offset": 30
+},
+"prowler": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"quadassault": {
+"w": 11,
+"h": 11,
+"offset": 30
+},
+"quadstealth": {
+"w": 11,
+"h": 11,
+"offset": 30
+},
+"router": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"skyguard": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"switchblade": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"threemanheavybuggy": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"thunderer": {
+"w": 15,
+"h": 15,
+"offset": 30
+},
+"two_man_assault_buggy": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"twomanheavybuggy": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"twomanhoverbuggy": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"vanguard": {
+"w": 15,
+"h": 11,
+"offset": 30
+},
+"vulture": {
+"w": 16,
+"h": 11,
+"offset": 30
+},
+"wasp": {
+"w": 11,
+"h": 11,
+"offset": 30
+}
+}
+}

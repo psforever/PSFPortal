@@ -7,8 +7,10 @@ import { Home } from '@/pages/Home'
 import { Leaderboard } from '@/pages/Leaderboard'
 import { Login } from '@/pages/Login'
 import { Outfit } from '@/pages/Outfit'
+import { PlayerPanel } from '@/pages/PlayerPanel'
 import { Profile } from '@/pages/Profile'
 import { Register } from '@/pages/Register'
+import { ToastProvider } from '@/state/ToastContext'
 import { UserProvider, useUser } from '@/state/UserContext'
 
 function NotFound() {
@@ -36,7 +38,8 @@ function Shell() {
             <Route path="/register" element={<Register />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/avatar/:id" element={<Avatar />} />
-            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/me/*" element={<PlayerPanel />} />
+            <Route path="/admin/*" element={<AdminPanel />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/user/:id" element={<Profile />} />
             <Route path="/outfit/:id" element={<Outfit />} />
@@ -72,7 +75,9 @@ export function App() {
   return (
     <BrowserRouter>
       <UserProvider>
-        <Shell />
+        <ToastProvider>
+          <Shell />
+        </ToastProvider>
       </UserProvider>
     </BrowserRouter>
   )
