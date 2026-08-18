@@ -9,3 +9,23 @@ package-lock.json
 yarn.lock
 *swp
 *swo
+
+# ---------------------------------------------------------------------------
+# Client-derived assets. NEVER commit anything in these paths.
+#
+# They are generated from a local PlanetSide client install (see
+# `npm run build-client-assets`) and contain material owned by Daybreak Game
+# Company: item names and description prose from the client's string table, and
+# inventory artwork from its texture archives. The generator is part of this
+# repo; its output is not, and must not be redistributed here or in any image
+# published from here. The app degrades to internal object names and plain grid
+# tiles when these are absent, so a fresh clone still builds and runs.
+# ---------------------------------------------------------------------------
+# `data/*` rather than `data/`: git cannot re-include a file whose parent DIRECTORY is
+# excluded, so the negation below only works against a contents glob.
+data/*
+# ...except the item table, which is committed. Its description prose -- the one clearly
+# copyrightable part -- is stripped before commit; what remains is names, types and grid
+# footprints, the factual identifiers the inventory UI needs to render anything at all.
+!data/items-english.json
+static/items/
