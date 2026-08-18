@@ -1,57 +1,63 @@
-import { FACTIONS } from '@/lib/factions'
+import { BarChart } from '@/components/ui/BarChart'
+import { EmpireLogo } from '@/components/ui/EmpireIcons'
 
 /**
- * Empire population: a legend of raw counts on the left, and a faction bar
- * graph on the right. Ported from the previous portal's EmpireStats.svelte
- * and re-themed to match the rest of the UI (navy surface, notched corners,
- * faction colours) instead of the original stark black/white box.
- *
- * Bar heights are `percentage * MAX_BAR_HEIGHT`, with a `min-height` stub so
- * an empire at 0% still shows a labelled bar. The bars grow via a CSS height
- * transition: the home page renders first with zero data and re-renders when
- * /api/stats resolves, so they animate up on load with no timer.
+ * Empire population: a legend of raw counts on the left, and a faction bar graph on the right (the
+ * SCIFICN BarChart, one bar per empire coloured by faction). Black Ops (NL) only appears -- in both
+ * the tally and the chart -- when its population is non-zero. A faint PSForever logo sits behind the
+ * chart.
  */
 
-const MAX_BAR_HEIGHT = 150
-const GRAPH_HEIGHT = 190
-
-type Empire = 'TR' | 'NC' | 'VS'
-
-const EMPIRES = FACTIONS.filter((f): f is typeof f & { key: Empire } =>
-  f.key === 'TR' || f.key === 'NC' || f.key === 'VS'
-)
-
-const BAR_LEFT: Record<Empire, string> = { TR: '10%', NC: '40%', VS: '70%' }
-
-/**
- * Each bar is a vertical faction gradient (dim empire colour at the base,
- * bright at the top, as if charged upward), notched at the top corners to
- * match the panel geometry, and lit with a faction-coloured drop-shadow.
- * `drop-shadow` is used rather than `box-shadow` so the glow follows the
- * clip-path instead of being clipped away.
- */
-const BAR: Record<Empire, { from: string; to: string; glow: string }> = {
-  TR: { from: 'var(--color-tr)', to: 'var(--color-tr-bright)', glow: 'var(--glow-tr)' },
-  NC: { from: 'var(--color-nc)', to: 'var(--color-nc-bright)', glow: 'var(--glow-nc)' },
-  VS: { from: 'var(--color-vs)', to: 'var(--color-vs-bright)', glow: 'var(--glow-vs)' }
+interface Row {
+  key: string
+  name: string
+  faction: 0 | 1 | 2 | 3
+  cls: string
+  secondaryCls: string
+  value: number
+  color: string
+  glow: string
 }
 
-// notch the two top corners, HUD-style
-const BAR_CLIP = 'polygon(4px 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%, 0 4px)'
+export function EmpireStats({
+  stats
+}: {
+  stats: { TR: number; NC: number; VS: number; NL?: number }
+}) {
+  const rows: Row[] = [
+    { key: 'TR', name: 'Terran Republic', faction: 0, cls: 'faction-tr', secondaryCls: 'faction-tr-secondary', value: stats.TR, color: 'var(--color-tr-bright)', glow: 'var(--glow-tr)' },
+    { key: 'NC', name: 'New Conglomerate', faction: 1, cls: 'faction-nc', secondaryCls: 'faction-nc-secondary', value: stats.NC, color: 'var(--color-nc-bright)', glow: 'var(--glow-nc)' },
+    { key: 'VS', name: 'Vanu Sovereignty', faction: 2, cls: 'faction-vs', secondaryCls: 'faction-vs-secondary', value: stats.VS, color: 'var(--color-vs-bright)', glow: 'var(--glow-vs)' }
+  ]
+  // Black Ops: shown only when present.
+  if ((stats.NL ?? 0) > 0) {
+    rows.push({ key: 'BO', name: 'Black Ops', faction: 3, cls: '', secondaryCls: '', value: stats.NL as number, color: '#b8bcc4', glow: 'none' })
+  }
 
-export function EmpireStats({ stats }: { stats: Record<Empire, number> }) {
-  const total = stats.TR + stats.NC + stats.VS
-  const denom = total || 1
-  const pct = (key: Empire) => stats[key] / denom
+  const total = rows.reduce((s, r) => s + r.value, 0)
+  const data = rows.map((r) => ({ label: r.key, value: r.value, color: r.color, glow: r.glow }))
 
   return (
     <div className="flex items-stretch gap-4">
       {/* legend / population counts — left of the chart */}
       <ul className="flex-1 min-w-0 flex flex-col justify-center gap-2 text-sm">
-        {EMPIRES.map((e) => (
-          <li key={e.key} className="flex items-baseline justify-between gap-3">
-            <span className={`${e.cls} text-xs uppercase tracking-[0.18em]`}>{e.name}</span>
-            <span className={`${e.secondaryCls} tabular-nums`}>{stats[e.key as Empire]}</span>
+        {rows.map((r) => (
+          <li key={r.key} className="flex items-center justify-between gap-3">
+            <span className="flex items-center gap-2 min-w-0">
+              <EmpireLogo faction={r.faction} size={18} title={r.name} />
+              <span
+                className={`${r.cls} text-xs uppercase tracking-[0.18em] truncate`}
+                style={r.cls ? undefined : { color: 'var(--text-secondary)' }}
+              >
+                {r.name}
+              </span>
+            </span>
+            <span
+              className={`${r.secondaryCls} tabular-nums`}
+              style={r.secondaryCls ? undefined : { color: 'var(--text-muted)' }}
+            >
+              {r.value}
+            </span>
           </li>
         ))}
         <li
@@ -65,59 +71,17 @@ export function EmpireStats({ stats }: { stats: Record<Empire, number> }) {
         </li>
       </ul>
 
-      {/* bar graph — right */}
+      {/* scificn bar graph — right */}
       <div
-        className="relative overflow-hidden shrink-0"
-        style={{
-          width: 210,
-          height: GRAPH_HEIGHT,
-          background: 'var(--background)',
-          border: '1px solid var(--border)',
-          clipPath: 'var(--clip-corner-md)'
-        }}
+        className="shrink-0 overflow-hidden"
+        style={{ width: 210, background: 'var(--surface)', clipPath: 'var(--clip-corner-md)' }}
       >
-        {/* background logo loop */}
-        <div
-          aria-hidden
-          className="absolute inset-0 z-0 bg-no-repeat bg-center"
-          style={{ opacity: 0.28, backgroundImage: "url('/img/logo_crop.png')" }}
+        <BarChart
+          style={{ width: 210, background: 'transparent', border: 'none' }}
+          data={data}
+          orientation="vertical"
+          title="Population"
         />
-
-        {/* teal baseline */}
-        <div
-          aria-hidden
-          className="absolute bottom-0 left-0 w-full"
-          style={{ height: 1, background: 'var(--border-active)', opacity: 0.6, zIndex: 1 }}
-        />
-
-        {/* bars */}
-        {EMPIRES.map((e) => {
-          const key = e.key as Empire
-          const bar = BAR[key]
-          return (
-            <div
-              key={key}
-              className="absolute bottom-0 text-center z-[1]"
-              title={`${stats[key]} ${key}`}
-              style={{
-                left: BAR_LEFT[key],
-                height: pct(key) * MAX_BAR_HEIGHT,
-                minWidth: 48,
-                minHeight: '2.75em',
-                background: `linear-gradient(to top, ${bar.from} 0%, ${bar.to} 92%)`,
-                clipPath: BAR_CLIP,
-                filter: `drop-shadow(${bar.glow})`,
-                color: '#fff',
-                textShadow: '1px 1px 2px #000',
-                transition: 'height 1s cubic-bezier(0.33, 1, 0.68, 1)'
-              }}
-            >
-              <strong className="text-xs">{key}</strong>
-              <br />
-              <span className="text-xs">{Math.round(pct(key) * 100)}%</span>
-            </div>
-          )
-        })}
       </div>
     </div>
   )

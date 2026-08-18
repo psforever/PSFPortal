@@ -39,3 +39,75 @@ export function factionById(id: number | undefined | null): Faction | undefined 
 export function factionClass(id: number | undefined | null): string {
   return factionById(id)?.cls ?? ''
 }
+
+/** Sanctuary zone id -> owning empire (PSF ZoneInfo: home1 NC, home2 TR, home3 VS). */
+export const SANCTUARY_EMPIRE: Record<string, 0 | 1 | 2> = { home1: 1, home2: 0, home3: 2 }
+
+/**
+ * Which of a zone's warpgates are currently wired to a sanctuary, keyed by the gate's raw zonemap
+ * name (lowercased) -> sanctuary empire id.
+ *
+ * This must come from the live lattice, never the gate's name: the server rewires warpgate links at
+ * runtime, so a gate called `WG_Hossin_to_VSSanc` was observed linking to `home2/WG_TRSanc_to_...`,
+ * i.e. the TR sanctuary. Intercontinental links arrive with both ends as `<zoneId>/<gateName>`.
+ */
+export function sanctuaryTies(
+  lattice: [string, string][] | undefined,
+  zoneId: string
+): Record<string, 0 | 1 | 2> {
+  const out: Record<string, 0 | 1 | 2> = {}
+  for (const [a, b] of lattice ?? []) {
+    for (const [near, far] of [
+      [a, b],
+      [b, a]
+    ] as const) {
+      if (!near.startsWith(`${zoneId}/`)) continue
+      const farZone = far.includes('/') ? far.split('/')[0] : ''
+      const empire = SANCTUARY_EMPIRE[farZone]
+      if (empire === undefined) continue
+      out[near.slice(zoneId.length + 1).toLowerCase()] = empire
+    }
+  }
+  return out
+}
+
+/** Display name for a gate wired to a sanctuary, e.g. "TR Sanctuary Gate". */
+export function sanctuaryGateName(empire: 0 | 1 | 2): string {
+  return `${FACTIONS[empire].key} Sanctuary Gate`
+}
+
+/** Zone ids that are sanctuaries -- real destinations, but the portal ships no map for them. */
+export const SANCTUARY_ZONES = new Set(['home1', 'home2', 'home3'])
+
+/**
+ * Live destination label for every warpgate in a zone, keyed by raw gate name (lowercased).
+ *
+ * Gate names in the map data record the link the zone shipped with, and the server rewires those at
+ * runtime -- so a gate can be named for one destination while actually leading somewhere else, and
+ * two gates can end up claiming the same name. Deriving the label from the live lattice keeps every
+ * gate honest and unique. `zoneNames` maps a zone id (z1, home2, ...) to its display name.
+ */
+export function gateDestinations(
+  lattice: [string, string][] | undefined,
+  zoneId: string,
+  zoneNames: Record<string, string>
+): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [a, b] of lattice ?? []) {
+    for (const [near, far] of [
+      [a, b],
+      [b, a]
+    ] as const) {
+      if (!near.startsWith(`${zoneId}/`)) continue
+      const farZone = far.includes('/') ? far.split('/')[0] : ''
+      if (!farZone) continue
+      const empire = SANCTUARY_EMPIRE[farZone]
+      const label =
+        empire !== undefined ? sanctuaryGateName(empire) : zoneNames[farZone]
+          ? `${zoneNames[farZone]} Gate`
+          : ''
+      if (label) out[near.slice(zoneId.length + 1).toLowerCase()] = label
+    }
+  }
+  return out
+}

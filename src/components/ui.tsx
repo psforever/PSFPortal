@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 /* ------------------------------------------------------------------ *
@@ -89,6 +89,40 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
     <p className="text-sm animate-pulse" style={{ color: 'var(--text-muted)' }}>
       {label}…
     </p>
+  )
+}
+
+/**
+ * A shimmering placeholder block for data that isn't available yet (server still coming up, feed
+ * unreachable). Sized by className/style; the sci-fi sweep comes from the `.skeleton` styles in
+ * globals.css. Use in place of a value while a source is being (re)checked.
+ */
+export function Skeleton({
+  className,
+  style,
+  rounded = true
+}: {
+  className?: string
+  style?: CSSProperties
+  rounded?: boolean
+}) {
+  return (
+    <span
+      aria-hidden
+      className={cn('skeleton block', rounded && 'rounded-[2px]', className)}
+      style={style}
+    />
+  )
+}
+
+/** A stack of skeleton lines, for text-ish placeholders. `lines` rows, the last one shorter. */
+export function SkeletonLines({ lines = 3, className }: { lines?: number; className?: string }) {
+  return (
+    <div className={cn('space-y-2', className)}>
+      {Array.from({ length: lines }, (_, i) => (
+        <Skeleton key={i} className="h-3.5" style={{ width: i === lines - 1 ? '60%' : '100%' }} />
+      ))}
+    </div>
   )
 }
 
