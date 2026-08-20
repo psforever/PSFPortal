@@ -49,13 +49,31 @@ function empire(id: number): string {
 
 /**
  * Audit -> Interstellar Log. Who hacked what, and when bases flipped or failed to flip. Held in
- * memory by the world server's admin API actor (never persisted) and pruned after seven days, so it
+ * memory by the PSF-Server HTTP API actor (never persisted) and pruned after seven days, so it
  * is empty after a world server restart -- expected rather than an error.
  */
 export function InterstellarLogSection() {
   const [events, setEvents] = useState<InterstellarEvent[] | null>(null)
   const [retention, setRetention] = useState(7)
   const [unavailable, setUnavailable] = useState(false)
+  /**
+   * Zone id -> continent name, from the continent index the portal already ships.
+   *
+   * The world server reports a zone by its internal id (`z1`, `home2`), which is what the rest of the
+   * PSF-Server HTTP API speaks. Resolving it here rather than server-side keeps the event payload as the
+   * server's own vocabulary and reuses a file the portal loads anyway -- and an id the index does not
+   * know still renders as itself rather than disappearing.
+   */
+  const [zoneNames, setZoneNames] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    fetch('/continents/index.json')
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error())))
+      .then((zones: { zoneId: string; name: string }[]) =>
+        setZoneNames(Object.fromEntries(zones.map((z) => [z.zoneId, z.name])))
+      )
+      .catch(() => setZoneNames({}))
+  }, [])
 
   const load = useCallback(() => {
     api
@@ -113,15 +131,26 @@ export function InterstellarLogSection() {
             columns={[
               { header: 'When', cell: (r) => fmtWhen(r.at) },
               {
-                header: 'Base',
+                header: 'Continent',
                 cell: (r) => (
                   <span style={{ color: 'var(--text-secondary)' }}>
-                    {r.base}
-                    <span className="ml-2 text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                      {r.zone}
-                    </span>
+                    {zoneNames[r.zone] ?? r.zone}
+                    {zoneNames[r.zone] && (
+                      <span className="ml-2 text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        {r.zone}
+                      </span>
+                    )}
                   </span>
                 )
+              },
+              {
+                header: 'Facility',
+                cell: (r) =>
+                  r.base ? (
+                    <span style={{ color: 'var(--text-secondary)' }}>{r.base}</span>
+                  ) : (
+                    <span style={{ color: 'var(--text-muted)' }}>&mdash;</span>
+                  )
               },
               {
                 header: 'Event',
