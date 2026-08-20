@@ -11,7 +11,7 @@ const api = express.Router();
 // "a player joined" invisible for minutes.
 //
 // Instead, cache keyed by a signature of the LIVE server state (status + the
-// set of connected player names, both already held in memory by the PSAdmin
+// set of connected player names, both already held in memory by the
 // poller). The enrichment DB work only reruns when that actually changes -- so
 // a status flip or a roster change refreshes immediately, while an unchanged
 // roster keeps serving the cached snapshot and does no DB work. POP_CACHE_MS is
@@ -20,7 +20,7 @@ const api = express.Router();
 const POP_CACHE_MS = (Number(process.env.POP_CACHE_MINUTES) || 5) * 60 * 1000;
 let popCache = { at: 0, sig: null, data: null };
 
-// A cheap fingerprint of the live server state, from the in-memory PSAdmin
+// A cheap fingerprint of the live server state, from the in-memory
 // poll (no DB access). Changes exactly when the home page needs to update.
 function populationSignature() {
 	const info = get_server_info();
@@ -42,7 +42,7 @@ async function computePopulation() {
 			player_info = player_info.concat(char)
 			empires[db.FACTION_MAP[char.faction_id][1]] += 1
 		} else {
-			console.log("WARNING: cannot find player info '" + players[i].name + "' (are you sure PSAdmin is configured right?)")
+			console.log("WARNING: cannot find player info '" + players[i].name + "' (is PSADMIN pointed at the right host?)")
 		}
 	}
 

@@ -111,7 +111,7 @@ export function InterstellarLogSection() {
         {!events ? (
           unavailable ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              The world server's admin API is unavailable; retrying every 60&nbsp;seconds.
+              The PSF-Server HTTP API is unavailable; retrying every 60&nbsp;seconds.
             </p>
           ) : (
             <div className="space-y-2.5 py-1">

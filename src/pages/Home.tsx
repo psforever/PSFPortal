@@ -10,7 +10,7 @@ import type { Stats } from '@/lib/types'
 
 /**
  * How often the home page silently re-checks server status, population and the online roster. Matches
- * the backend's 10s PSAdmin poll cadence, so a change (server down/up, a player joining or leaving)
+ * the backend's 10s poll of the PSF-Server HTTP API, so a change (server down/up, a player joining or leaving)
  * shows within about one cycle. The refresh replaces the data in place -- no spinner, no flicker.
  */
 const REFRESH_MS = 10_000

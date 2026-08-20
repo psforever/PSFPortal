@@ -77,7 +77,7 @@ export function ContinentModal({
           if (!cancelled) setControl({})
         })
 
-    // The lattice is live server state too (read over PSAdmin), so it refreshes on the same tick.
+    // The lattice is live server state too (read over the PSF-Server HTTP API), so it refreshes on the same tick.
     const loadLattice = () =>
       api
         .get<{ links: [string, string][] }>(`/continents/${summary.zoneId}/lattice`)

@@ -1,4 +1,4 @@
-// Client for the login server's admin API. This used to be a raw-TCP JSON protocol; it is now HTTP
+// Client for the PSF-Server HTTP API. This used to be a raw-TCP JSON protocol; it is now HTTP
 // (Akka HTTP on the login server, package net.psforever.actors.api -- see AdminHttpService.scala).
 // The response bodies are the same JSON the old protocol returned, so only the transport here
 // changed -- callers are unaffected.
@@ -6,7 +6,7 @@
 let error_count = 0;
 let server_info: any = {};
 
-/** Base URL of the admin API, from the PSADMIN env (host:port). */
+/** Base URL of the PSF-Server HTTP API, from the PSADMIN env (host:port). */
 let admin_base = '';
 
 export async function start_server_polling() {
@@ -17,7 +17,7 @@ export async function start_server_polling() {
 		return;
 	}
 	admin_base = `http://${connect_to}`;
-	console.log('Starting admin API polling for ' + connect_to);
+	console.log('Starting PSF-Server HTTP API polling for ' + connect_to);
 
 	if (!(await poll_server())) {
 		console.log('WARNING: initial admin poll FAILED! Is the server up and the config right?');
@@ -31,7 +31,7 @@ async function poll_server() {
 		const player_list = await get_player_list();
 		server_info = { status: 'UP', players: player_list };
 		if (error_count > 0) {
-			console.log('Admin API connection has returned after ' + error_count + ' errors');
+			console.log('PSF-Server HTTP API connection has returned after ' + error_count + ' errors');
 		}
 		error_count = 0;
 		return true;

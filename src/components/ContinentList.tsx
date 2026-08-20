@@ -44,7 +44,7 @@ export function ContinentList() {
       .catch(() => setZones([]))
   }, [])
 
-  // Per-zone live detail (lock + population + hotspots), read over the admin API; polls like the map.
+  // Per-zone live detail (lock + population + hotspots), read over the PSF-Server HTTP API; polls like the map.
   useEffect(() => {
     let cancelled = false
     const load = () =>
