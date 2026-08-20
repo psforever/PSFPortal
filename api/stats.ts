@@ -7,10 +7,6 @@ const api = express.Router();
 
 api.get('/char_stats/:batch', async (req, res, next) => {
     try {
-        const stats = await db.get_stats();
-
-        stats.empires = { "TR": 0, "NC": 0, "VS": 0 }
-
         var batch = req.params.batch;
 
         const avatars = await db.get_character_batch_for_stats(batch, AVATAR.ID, SQL_ORDER.ASCENDING);
@@ -25,10 +21,6 @@ api.get('/char_stats/:batch', async (req, res, next) => {
 
 api.get('/char_stats_bep/:batch', async (req, res, next) => {
     try {
-        const stats = await db.get_stats();
-
-        stats.empires = { "TR": 0, "NC": 0, "VS": 0 }
-
         var batch = req.params.batch;
 
         const avatars = await db.get_character_batch_for_stats(batch, AVATAR.BEP, SQL_ORDER.DESCENDING);
@@ -43,10 +35,6 @@ api.get('/char_stats_bep/:batch', async (req, res, next) => {
 
 api.get('/char_stats_cep/:batch', async (req, res, next) => {
     try {
-        const stats = await db.get_stats();
-
-        stats.empires = { "TR": 0, "NC": 0, "VS": 0 }
-
         var batch = req.params.batch;
 
         const avatars = await db.get_character_batch_for_stats(batch, AVATAR.CEP, SQL_ORDER.DESCENDING);

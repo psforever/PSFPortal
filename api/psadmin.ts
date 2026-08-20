@@ -48,22 +48,22 @@ export function get_server_info() {
 }
 
 /**
- * GET a command's JSON from the admin API. The API answers with the same `data` map the old protocol
+ * GET a command's JSON from the PSF-Server HTTP API. The API answers with the same `data` map the old protocol
  * did, including `{ error: true, message }` on failure -- surfaced here as a thrown Error so callers
  * don't read a failure as an empty result.
  */
-async function admin_get(path) {
-	if (!admin_base) throw new Error('admin API not configured');
+export async function admin_get(path) {
+	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
 	const res = await fetch(`${admin_base}${path}`, { signal: AbortSignal.timeout(6000) });
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
-		throw new Error(`Admin API: ${body?.message ?? res.statusText}`);
+		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
 	}
 	return body;
 }
 
-async function admin_post(path, json, actor?: string) {
-	if (!admin_base) throw new Error('admin API not configured');
+export async function admin_post(path, json, actor?: string) {
+	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
 	const res = await fetch(`${admin_base}${path}`, {
 		method: 'POST',
 		headers: {
@@ -76,10 +76,36 @@ async function admin_post(path, json, actor?: string) {
 	});
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
-		throw new Error(`Admin API: ${body?.message ?? res.statusText}`);
+		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
 	}
 	return body;
 }
+
+/**
+ * PUT / PATCH / DELETE against the PSF-Server HTTP API.
+ *
+ * Only the session store needs these verbs. It is a hot path -- one call per authenticated request --
+ * so the timeout is tighter than the command timeouts above: a session lookup that is going to fail
+ * should fail fast and let the request proceed as anonymous rather than hold the response open.
+ */
+async function admin_write(method: string, path: string, json?: any) {
+	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
+	const res = await fetch(`${admin_base}${path}`, {
+		method,
+		headers: { 'Content-Type': 'application/json' },
+		body: json === undefined ? undefined : JSON.stringify(json),
+		signal: AbortSignal.timeout(4000)
+	});
+	const body: any = await res.json().catch(() => ({}));
+	if (!res.ok || body?.error) {
+		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
+	}
+	return body;
+}
+
+export const admin_put = (path: string, json: any) => admin_write('PUT', path, json);
+export const admin_patch = (path: string, json: any) => admin_write('PATCH', path, json);
+export const admin_delete = (path: string) => admin_write('DELETE', path);
 
 async function get_player_list() {
 	const info = await admin_get('/players');

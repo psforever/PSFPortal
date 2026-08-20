@@ -37,10 +37,9 @@ export async function computeGateEmpires(zoneId) {
 		for (const [a, b] of links ?? []) edge(qualify(zid, a), qualify(zid, b));
 	}
 
-	// zone_number -> { local_id -> faction_id }
-	const rows = await db.pool.query('SELECT zone_id, local_id, faction_id FROM building');
-	const control = {};
-	for (const r of rows.rows) (control[r.zone_id] ??= {})[r.local_id] = r.faction_id;
+	// zone id -> { local_id -> faction_id }, from the live zones rather than the `building` table:
+	// the table trails a capture by however long its asynchronous write takes.
+	const control = await db.get_building_control();
 
 	// Look up a facility on a given zone by its (lowercased) raw name.
 	const facByRaw = {};
@@ -75,7 +74,7 @@ export async function computeGateEmpires(zoneId) {
 			});
 			if (gwNode) {
 				const f = lookup(pz).get(gwNode.slice(pz.length + 1));
-				const owner = control[zones[pz].number]?.[f.id];
+				const owner = control[pz]?.[f.id];
 				if (owner !== undefined && owner <= 2) {
 					ce = owner;
 					break;

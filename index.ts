@@ -1,11 +1,11 @@
 import express from 'express'
 import session from 'express-session'
-import connectPg from 'connect-pg-simple'
 import morgan from 'morgan'
 import history from 'connect-history-api-fallback'
 import dotenv from 'dotenv'
 import api from './api/index.ts'
 import { start_server_polling } from './api/psadmin.ts'
+import { AdminApiSessionStore } from './api/session-store.ts'
 import * as db from './api/db.ts'
 
 dotenv.config();
@@ -33,20 +33,16 @@ if (process.env.TRUST_PROXY) {
 // Kick off the DB connection and any dependencies
 // Needs to be in a function to await the DB connection state
 (async () => {
-	await db.connect_to_db();
+	// Polling first: it is what configures the PSF-Server HTTP API base URL, and the data layer now lives
+	// behind that same API -- probing it beforehand would only ever report "not configured".
 	await start_server_polling()
-
-	const pgSession = connectPg(session);
+	await db.connect_to_db();
 
 	const sessionMiddleware = session({
-		store: new pgSession({
-			pool: db.pool,
-			tableName: 'session',
-			// The PSForever database is provisioned by the server's Flyway
-			// migrations, which do not include the portal's session table.
-			// Create it on first run so a fresh database works out of the box.
-			createTableIfMissing: true
-		}),
+		// Sessions live in the login server's database, reached over the PSF-Server HTTP API. The portal has no
+		// database connection of its own -- see api/session-store.ts for why that mattered enough to
+		// replace connect-pg-simple.
+		store: new AdminApiSessionStore(),
 		secret: process.env.COOKIE_SECRET, // changing this will invalidate all sessions
 		resave: false, // dont bother saving unchanged sessions
 		saveUninitialized: false, // dont bother saving sessions that have no data

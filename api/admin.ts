@@ -9,27 +9,15 @@ api.param("user", fetch_user_middleware);
 
 api.get('/users', NEED_ADMIN, async (req, res, next) => {
 	const pagination = get_pagination(req);
-	const filter = get_filter(req,
-		{
-			param : 'filter',
-			default : 'all',
-			types : {
-				'gm' : { [db.ACCOUNT.ADMIN] : true },
-				'banned' : { [db.ACCOUNT.BANNED] : true },
-			}
-		}
-	);
+	// Both are passed through to the login server as plain tokens; it holds the whitelist now, and
+	// falls back to its own default for anything it does not recognise.
+	const filter = get_filter(req, { param: 'filter', default: 'all', types: ['gm', 'banned'] });
 
 	const sort = get_sort(req,
 		{
 			param : 'sort',
 			default : 'created_desc',
-			types : {
-				'id' : db.ACCOUNT.ID,
-				'created' : db.ACCOUNT.CREATED,
-				'username' : db.ACCOUNT.USER,
-				'last_login' : db.ACCOUNT.LAST_LOGIN,
-			}
+			types : [db.ACCOUNT.ID, db.ACCOUNT.CREATED, db.ACCOUNT.USER, db.ACCOUNT.LAST_LOGIN],
 		}
 	);
 

@@ -1,9 +1,13 @@
 # PSFPortal — Vite/React frontend built and served by the Express API.
 #
-# Debian (glibc) base rather than Alpine: bcrypt ships glibc prebuilt
-# binaries, so this avoids a source build. npm install runs inside the
-# image so the native bcrypt binary matches the container platform (the
-# host may be Windows/macOS).
+# Debian (glibc) base. This used to be load-bearing -- `bcrypt` and `pg` are
+# native modules, and bcrypt's glibc prebuilts avoided a source build. Both are
+# gone now that the login server owns the database and the password check, so
+# the dependency tree is pure JavaScript and an Alpine base would work. Left on
+# Debian deliberately rather than swapped in passing: the saving is tens of
+# megabytes on a locally-built dev image, and a base change deserves its own
+# test. npm install still runs inside the image so the tree matches the
+# container platform (the host may be Windows/macOS).
 
 # ---- build stage: install deps and produce the static SPA in public/ ----
 FROM node:24-bookworm-slim AS build

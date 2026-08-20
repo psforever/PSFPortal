@@ -14,101 +14,67 @@ export function get_pagination(req) {
 	};
 }
 
+/**
+ * Split a `<column>_<asc|desc>` token into its two halves.
+ *
+ * A malformed direction sorts ascending rather than being rejected: this is a display preference
+ * arriving in a query string, and refusing the whole page over it helps nobody.
+ */
 export function get_sort_param(param) {
 	const tokens = param.split("_");
-	let order = db.SQL_ORDER.ASCENDING;
-
-	// default to ascending if malformed
-	if (tokens[tokens.length-1] == "desc")
-		order = db.SQL_ORDER.DESCENDING;
-	else if (tokens[tokens.length-1] == "asc")
-		order = db.SQL_ORDER.ASCENDING;
-
-	return [tokens.slice(0, tokens.length-1).join("_"), order]
+	const last = tokens[tokens.length - 1];
+	const order = last === "desc" ? db.SQL_ORDER.DESCENDING : db.SQL_ORDER.ASCENDING;
+	return [tokens.slice(0, tokens.length - 1).join("_"), order];
 }
 
+/**
+ * The column and direction to sort a listing by, as `{ column, order }`.
+ *
+ * This used to build a fragment of SQL, which is why it dealt in symbolic column names. Sorting now
+ * happens in the login server, so the job here is only to decide WHICH of the permitted columns was
+ * asked for and pass the name along. An unknown column falls back to the caller's default -- and the
+ * login server whitelists it a second time, since it cannot assume this side did.
+ */
 export function get_sort(req, sort_spec) {
-	assert(sort_spec && sort_spec.param && sort_spec.default && sort_spec.types,
-		"Invalid filter specification");
-	assert(sort_spec.default, "Default sort specification required");
+	assert(sort_spec && sort_spec.param && sort_spec.default && Array.isArray(sort_spec.types),
+		"Invalid sort specification");
 
-	Object.keys(sort_spec.types).forEach((k) => {
-		assert(typeof k == 'string', "Sort key spec must be a string")
-		assert(typeof sort_spec.types[k] == 'symbol', "Sort value MUST be a symbolic table column")
-	});
-
-	const default_sort_parsed = get_sort_param(sort_spec.default);
-	assert(default_sort_parsed[0] in sort_spec.types, "Default sort type MUST be in spec")
-
-	const default_sort = { [sort_spec.types[default_sort_parsed[0]]] : default_sort_parsed[1] };
+	const [default_column, default_order] = get_sort_param(sort_spec.default);
+	assert(sort_spec.types.includes(default_column), "Default sort column MUST be in spec");
+	const fallback = { column: default_column, order: default_order };
 
 	const sort_query = req.query[sort_spec.param];
+	if (!sort_query) return fallback;
 
-	// return default
-	if (!sort_query) {
-		return default_sort;
+	// Only the first term is honoured. The old builder accepted a comma-separated list and emitted a
+	// multi-column ORDER BY; nothing in the UI has ever asked for one.
+	const [column, order] = get_sort_param(String(sort_query).split(",")[0]);
+	if (!sort_spec.types.includes(column)) {
+		console.log("WARNING: unknown sort column " + column);
+		return fallback;
 	}
-
-	const sort = {}
-	const types = sort_query.split(",");
-
-	for (let i = 0; i < types.length; i++) {
-		const t = types[i];
-		const sparsed = get_sort_param(t);
-
-		if (!(sparsed[0] in sort_spec.types)) {
-			console.log("WARNING: unknown sort type " + t);
-			return default_sort;
-		}
-
-		const column_name = sort_spec.types[sparsed[0]];
-		sort[column_name] = sparsed[1];
-	}
-
-	return sort;
+	return { column, order };
 }
 
+/**
+ * Which subset of a listing to show, as a single token (`'all'`, `'gm'`, `'banned'`).
+ *
+ * Also formerly a SQL fragment. The login server turns the token into a predicate; an unrecognised
+ * one means no filtering, which is the safe direction to fail for a listing.
+ */
 export function get_filter(req, filter_spec) {
-	assert(filter_spec && filter_spec.param && filter_spec.default && filter_spec.types,
+	assert(filter_spec && filter_spec.param && filter_spec.default && Array.isArray(filter_spec.types),
 		"Invalid filter specification");
 
 	const filter_query = req.query[filter_spec.param];
+	if (!filter_query) return filter_spec.default;
 
-	if (!filter_query) {
-		return {};
+	const token = String(filter_query).split(",")[0];
+	if (!filter_spec.types.includes(token)) {
+		if (token !== filter_spec.default) console.log("WARNING: unknown filter type " + token);
+		return filter_spec.default;
 	}
-
-	const types = filter_query.split(",");
-	
-	// No filtering needed, everything displayed
-    if (filter_spec.default in types) {
-		return {}
-	}
-
-	const filter = {
-		binop : "OR", // TODO: support more complex queries
-		fields : {},
-	}
-
-	for (let i = 0; i < types.length; i++) {
-		const t = types[i];
-
-		if (!(t in filter_spec.types)) {
-			console.log("WARNING: unknown filter type " + t);
-			return {}
-		}
-
-		const constraint = filter_spec.types[t];
-
-
-		Object.getOwnPropertySymbols(constraint).forEach(key => {
-			assert(Object.keys(constraint).length == 0 && typeof key == 'symbol',
-				"filter constraint keys MUST be symbolic table columns")
-			filter.fields[key] = constraint[key];
-		});
-	}
-
-	return filter;
+	return token;
 }
 
 export async function fetch_user_middleware(req, res, next, id) {
