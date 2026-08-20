@@ -5,6 +5,3 @@ public
 .git
 .env
 *.log
-# Legacy Svelte sources are kept for reference but are not part of the build.
-app
-scss
