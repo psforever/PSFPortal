@@ -161,3 +161,53 @@ export function recordSuccess(req, username?: unknown) {
 	byIp.reset(req.ip ?? 'unknown');
 	if (username !== undefined) byUser.reset(userKey(username));
 }
+
+/**
+ * General request gate for the public API.
+ *
+ * The two gates above guard a credential check; this one guards everything else. It exists because
+ * the portal's public reads are a lever on the world server's actor system and on the database, and
+ * the cache in `cache.ts` -- which is the real defence -- only bounds work per DISTINCT key. A caller
+ * varying a path parameter (a zone id, an avatar id) walks past the cache and reaches the upstream
+ * every time, so the number of distinct things one source may ask for still has to be capped.
+ *
+ * Deliberately loose, and sized for the worst legitimate case rather than the typical one. A page
+ * load fans out to several endpoints and the continent map polls every few seconds, so one active
+ * user is perhaps 20-40 requests a minute -- but `req.ip` is a NAT address for an office, a school or
+ * a phone network, where dozens of real users share one. 600/minute leaves room for roughly twenty
+ * simultaneous users behind a single address before anyone is refused.
+ *
+ * The lockout is capped low for the same reason: if this ever does fire on a shared address it takes
+ * innocent people with it, and two minutes is a nuisance where fifteen is an outage. That is an
+ * acceptable trade because this is a BACKSTOP -- the cache is what actually bounds upstream load, by
+ * collapsing any number of requests onto one call. This only stops a caller walking an id space to
+ * get around the cache, and a caller doing that is not inconvenienced by a short lockout.
+ */
+const publicRule: LimitRule = {
+	windowMs: 60_000,
+	max: 600,
+	lockMs: 15_000,
+	maxLockMs: 2 * 60_000
+};
+
+const byIpGeneral = new LimitStore(publicRule);
+
+/**
+ * Express middleware: count this request against its source and refuse once the allowance is spent.
+ *
+ * Counts every request rather than only failures, which is the difference between this and the
+ * credential gates: there is no such thing as a "failed" read to key off, and the thing being
+ * rationed is the work itself.
+ */
+export function publicRateLimit(req, res, next) {
+	const key = req.ip ?? 'unknown';
+	const wait = byIpGeneral.retryAfterMs(key);
+	if (wait > 0) {
+		const seconds = Math.ceil(wait / 1000);
+		res.setHeader('Retry-After', String(seconds));
+		res.status(429).json({ message: `Too many requests. Try again in ${seconds} seconds.` });
+		return;
+	}
+	byIpGeneral.fail(key);
+	next();
+}

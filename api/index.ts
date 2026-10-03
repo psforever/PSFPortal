@@ -8,6 +8,7 @@ import api_admin from './admin.ts'
 import api_me from './me.ts'
 import api_stats from './stats.ts'
 import api_continents from './continents.ts'
+import { publicRateLimit } from './ratelimit.ts'
 
 const VERSION = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
 const api = express.Router();
@@ -26,6 +27,11 @@ if (process.env.NODE_ENV !== "production") {
 // default nobody looked at.
 api.use(bodyParser.json({ limit: '64kb' }));
 api.use(bodyParser.urlencoded({ extended: true, limit: '64kb' }));
+
+// Backstop for the response cache: caps how many DISTINCT things one source may ask for. See the
+// note in ratelimit.ts -- the cache is what actually bounds upstream load, this stops a caller
+// walking an id space to get around it.
+api.use(publicRateLimit);
 
 api.use(api_auth)
 api.use(api_info)

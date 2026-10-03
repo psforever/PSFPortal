@@ -4,6 +4,7 @@ import { get_lattice, get_zone_locks, get_zone_details, get_zone_players, get_co
 import { applyRandomState, computeRandomState, loadZones } from './randomize.ts'
 import { set_zone_buildings } from './psadmin.ts'
 import { computeGateEmpires } from './gate-empires.ts'
+import { TTL, cached } from './cache.ts'
 import { NEED_ADMIN } from './util.ts'
 import { blocked, recordFailure, recordSuccess } from './ratelimit.ts'
 
@@ -26,7 +27,11 @@ const api = express.Router();
  * change invisible to the browser.
  */
 async function live_control_by_zone_number() {
-	const byZoneId = await db.get_building_control();
+	// Cached and coalesced: this reaches into the RUNNING GAME for its answer, on the same dispatcher
+	// that moves players. Every caller gets the same ownership map, so one upstream read serves all of
+	// them for the length of the TTL -- which is what stops a public, unauthenticated endpoint from
+	// being a lever on the world server.
+	const byZoneId = await cached('world:control', TTL.world, () => db.get_building_control());
 	const zones = loadZones();
 	const out = {};
 	for (const [zid, facilities] of Object.entries(byZoneId)) {
@@ -62,7 +67,7 @@ api.get('/continents/:zoneid/lattice', async (req, res) => {
 		return;
 	}
 	try {
-		const all = await get_lattice();
+		const all = await cached('world:lattice', TTL.world, () => get_lattice());
 		// A zone's own list holds its internal facility links plus whichever intercontinental links it
 		// happened to register -- the far side of a warpgate pair is often filed under the OTHER zone.
 		// Gather from every zone so a caller sees every link that touches this one.
@@ -97,7 +102,8 @@ api.get('/continents/:zoneid/gate-empires', async (req, res) => {
 		return;
 	}
 	try {
-		res.status(200).json({ zone: zoneid, gates: await computeGateEmpires(zoneid) });
+		const gates = await cached(`world:gates:${zoneid}`, TTL.world, () => computeGateEmpires(zoneid));
+		res.status(200).json({ zone: zoneid, gates });
 	} catch (e) {
 		res.status(503).json({ message: 'gate empires unavailable', gates: {} });
 	}
@@ -107,7 +113,7 @@ api.get('/continents/:zoneid/gate-empires', async (req, res) => {
 // for all zones in one call since the zone list renders them together.
 api.get('/zones/locks', async (req, res) => {
 	try {
-		res.status(200).json({ locks: await get_zone_locks() });
+		res.status(200).json({ locks: await cached('world:locks', TTL.world, () => get_zone_locks()) });
 	} catch (e) {
 		// Server down, or an older build without the list_zones command.
 		res.status(503).json({ message: 'zone locks unavailable', locks: {} });
@@ -118,7 +124,7 @@ api.get('/zones/locks', async (req, res) => {
 // panel (population + hotspots per continent).
 api.get('/zones/details', async (req, res) => {
 	try {
-		res.status(200).json({ zones: await get_zone_details() });
+		res.status(200).json({ zones: await cached('world:details', TTL.world, () => get_zone_details()) });
 	} catch (e) {
 		res.status(503).json({ message: 'zone details unavailable', zones: {} });
 	}
