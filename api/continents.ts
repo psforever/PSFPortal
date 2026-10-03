@@ -16,7 +16,7 @@ const api = express.Router();
 /**
  * Live facility ownership, keyed by zone NUMBER then local id.
  *
- * The source is the running world (`/zones/control` on the PSF-Server HTTP API), not the `building` table the
+ * The source is the running world (`/zones/control` on the PSF-HTTP API), not the `building` table the
  * portal used to read: `BuildingActor.SetFaction` updates the live entity and the database, and the
  * database write is asynchronous, so a map drawn from the table could paint a base for the empire
  * that held it a moment ago.
@@ -51,7 +51,7 @@ api.get('/continents/:zone/control', async (req, res) => {
 	}
 });
 
-// Facility lattice for a zone, read live from the running server over the PSF-Server HTTP API (`list_lattice`)
+// Facility lattice for a zone, read live from the running server over the PSF-HTTP API (`list_lattice`)
 // rather than from the shipped zonemaps, so it reflects the topology the server is actually
 // enforcing. Links are pairs of building names; the client resolves them against the facility
 // layout it already has.
@@ -103,7 +103,7 @@ api.get('/continents/:zoneid/gate-empires', async (req, res) => {
 	}
 });
 
-// Continental lock state for every zone, read live from the running server over the PSF-Server HTTP API. Returned
+// Continental lock state for every zone, read live from the running server over the PSF-HTTP API. Returned
 // for all zones in one call since the zone list renders them together.
 api.get('/zones/locks', async (req, res) => {
 	try {
@@ -259,7 +259,7 @@ api.post('/continents/:zoneid/building/:localId/faction', NEED_ADMIN, async (req
 });
 
 // Admin-only: every zone's current state in one call -- base ownership counts per empire (from the
-// building table) plus live lock state (from the PSF-Server HTTP API). Backs the admin "Continents" view so it can
+// building table) plus live lock state (from the PSF-HTTP API). Backs the admin "Continents" view so it can
 // render all continents at once without a request per zone.
 api.get('/zones/state', NEED_ADMIN, async (req, res) => {
 	try {

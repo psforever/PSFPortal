@@ -1,4 +1,4 @@
-// Client for the PSF-Server HTTP API. This used to be a raw-TCP JSON protocol; it is now HTTP
+// Client for the PSF-HTTP API. This used to be a raw-TCP JSON protocol; it is now HTTP
 // (Akka HTTP on the login server, package net.psforever.actors.api -- see AdminHttpService.scala).
 // The response bodies are the same JSON the old protocol returned, so only the transport here
 // changed -- callers are unaffected.
@@ -6,7 +6,7 @@
 let error_count = 0;
 let server_info: any = {};
 
-/** Base URL of the PSF-Server HTTP API, from the PSADMIN env (host:port). */
+/** Base URL of the PSF-HTTP API, from the PSADMIN env (host:port). */
 let admin_base = '';
 
 export async function start_server_polling() {
@@ -17,7 +17,7 @@ export async function start_server_polling() {
 		return;
 	}
 	admin_base = `http://${connect_to}`;
-	console.log('Starting PSF-Server HTTP API polling for ' + connect_to);
+	console.log('Starting PSF-HTTP API polling for ' + connect_to);
 
 	if (!(await poll_server())) {
 		console.log('WARNING: initial admin poll FAILED! Is the server up and the config right?');
@@ -31,7 +31,7 @@ async function poll_server() {
 		const player_list = await get_player_list();
 		server_info = { status: 'UP', players: player_list };
 		if (error_count > 0) {
-			console.log('PSF-Server HTTP API connection has returned after ' + error_count + ' errors');
+			console.log('PSF-HTTP API connection has returned after ' + error_count + ' errors');
 		}
 		error_count = 0;
 		return true;
@@ -57,13 +57,13 @@ export async function admin_get(path) {
 	const res = await fetch(`${admin_base}${path}`, { signal: AbortSignal.timeout(6000) });
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
-		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
+		throw new Error(`PSF-HTTP API: ${body?.message ?? res.statusText}`);
 	}
 	return body;
 }
 
 export async function admin_post(path, json, actor?: string) {
-	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
+	if (!admin_base) throw new Error('PSF-HTTP API not configured');
 	const res = await fetch(`${admin_base}${path}`, {
 		method: 'POST',
 		headers: {
@@ -76,20 +76,20 @@ export async function admin_post(path, json, actor?: string) {
 	});
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
-		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
+		throw new Error(`PSF-HTTP API: ${body?.message ?? res.statusText}`);
 	}
 	return body;
 }
 
 /**
- * PUT / PATCH / DELETE against the PSF-Server HTTP API.
+ * PUT / PATCH / DELETE against the PSF-HTTP API.
  *
  * Only the session store needs these verbs. It is a hot path -- one call per authenticated request --
  * so the timeout is tighter than the command timeouts above: a session lookup that is going to fail
  * should fail fast and let the request proceed as anonymous rather than hold the response open.
  */
 async function admin_write(method: string, path: string, json?: any) {
-	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
+	if (!admin_base) throw new Error('PSF-HTTP API not configured');
 	const res = await fetch(`${admin_base}${path}`, {
 		method,
 		headers: { 'Content-Type': 'application/json' },
@@ -98,7 +98,7 @@ async function admin_write(method: string, path: string, json?: any) {
 	});
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
-		throw new Error(`PSF-Server HTTP API: ${body?.message ?? res.statusText}`);
+		throw new Error(`PSF-HTTP API: ${body?.message ?? res.statusText}`);
 	}
 	return body;
 }

@@ -33,13 +33,13 @@ if (process.env.TRUST_PROXY) {
 // Kick off the DB connection and any dependencies
 // Needs to be in a function to await the DB connection state
 (async () => {
-	// Polling first: it is what configures the PSF-Server HTTP API base URL, and the data layer now lives
+	// Polling first: it is what configures the PSF-HTTP API base URL, and the data layer now lives
 	// behind that same API -- probing it beforehand would only ever report "not configured".
 	await start_server_polling()
 	await db.connect_to_db();
 
 	const sessionMiddleware = session({
-		// Sessions live in the login server's database, reached over the PSF-Server HTTP API. The portal has no
+		// Sessions live in the login server's database, reached over the PSF-HTTP API. The portal has no
 		// database connection of its own -- see api/session-store.ts for why that mattered enough to
 		// replace connect-pg-simple.
 		store: new AdminApiSessionStore(),

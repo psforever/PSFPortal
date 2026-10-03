@@ -2,7 +2,7 @@ import session from 'express-session'
 import { admin_get, admin_put, admin_patch, admin_delete, admin_post } from './psadmin.ts'
 
 /**
- * An `express-session` store backed by the PSF-Server HTTP API.
+ * An `express-session` store backed by the PSF-HTTP API.
  *
  * This replaces `connect-pg-simple`. It exists for one reason: the session table was the last thing
  * keeping a PostgreSQL pool in this process. Leaving it behind would have meant the portal still held

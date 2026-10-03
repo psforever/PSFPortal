@@ -5,11 +5,11 @@ characters, statistics, and live world administration.
 
 The portal is one process: an **Express 5 API** that also serves a **React 19 single-page app** built
 by Vite. It has **no database connection of its own**. Everything — accounts, characters, statistics,
-sessions, even the password check at login — goes through PSF-LoginServer's **PSF-Server HTTP API**.
+sessions, even the password check at login — goes through the **PSF-HTTP API**.
 
 ```
      browser ──► Express (:8080) ──► PSF-LoginServer ──► PostgreSQL
-                  + built SPA        PSF-Server HTTP API (:51002)
+                  + built SPA        PSF-HTTP API (:51002)
 ```
 
 That single arrow is deliberate. The portal used to hold its own PostgreSQL pool, which made two
@@ -82,12 +82,12 @@ Each entry carries the continent, the facility, who caused it, and the empires b
 | `PortalDesignation` | Portal Designation | ownership assigned from this admin panel rather than won in the field | **yes** |
 
 The nine field events come from the login server's capture machinery (`HackCaptureActor`,
-`CaptureFlagManager`) and name the facility directly. `PortalDesignation` is emitted by the PSF-Server HTTP API
+`CaptureFlagManager`) and name the facility directly. `PortalDesignation` is emitted by the PSF-HTTP API
 itself; a single-facility designation names the facility, while a whole-continent or bulk assignment
 says so rather than naming one.
 
 Continent names are resolved in the browser from `static/continents/index.json` — the world server
-reports a zone by its internal id (`z1`, `home2`), which is the vocabulary the rest of the PSF-Server HTTP API
+reports a zone by its internal id (`z1`, `home2`), which is the vocabulary the rest of the PSF-HTTP API
 speaks, and an id the index does not know still renders as itself.
 
 ---
@@ -123,7 +123,7 @@ PSADMIN=127.0.0.1:51002
 
 | Variable | Meaning |
 |---|---|
-| `PSADMIN` | `host:port` of the PSF-Server HTTP API — the portal's only data source |
+| `PSADMIN` | `host:port` of the PSF-HTTP API — the portal's only data source |
 | `PORT` | Express listen port (default `8080`) |
 | `COOKIE_SECRET` | session signing key — changing it invalidates every session |
 | `TRUST_PROXY` | set when running behind a reverse proxy |
@@ -166,7 +166,7 @@ built alongside the login server stack; see that repository's `docker-compose.ym
 index.ts              Express entry point — sessions, static SPA, mounts /api
 api/                  API routes and data access
   db.ts                 client for the login server's data endpoints (no SQL, despite the name)
-  psadmin.ts            HTTP client for the PSF-Server HTTP API
+  psadmin.ts            HTTP client for the PSF-HTTP API
   session-store.ts      express-session store backed by that same API
   authentication.ts     register / login / logout
   user.ts  me.ts        the signed-in account and its own characters

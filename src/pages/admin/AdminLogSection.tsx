@@ -32,7 +32,7 @@ function fmtDetail(detail: Record<string, string> | undefined): string {
 
 /**
  * Audit -> Admin Log. The trail of state-changing administrative actions, held in memory by the world
- * PSF-Server HTTP API actor (never persisted) and pruned after seven days -- so this list is empty
+ * PSF-HTTP API actor (never persisted) and pruned after seven days -- so this list is empty
  * after a world server restart, which is expected rather than an error.
  */
 export function AdminLogSection() {
@@ -76,7 +76,7 @@ export function AdminLogSection() {
         {!actions ? (
           unavailable ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              The PSF-Server HTTP API is unavailable; retrying every 60&nbsp;seconds.
+              The PSF-HTTP API is unavailable; retrying every 60&nbsp;seconds.
             </p>
           ) : (
             <div className="space-y-2.5 py-1">

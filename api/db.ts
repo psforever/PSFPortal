@@ -3,7 +3,7 @@
  *
  * Despite the name, nothing here touches PostgreSQL any more. Every query this module used to issue
  * now lives in PSF-LoginServer (`net.psforever.actors.api.PortalQueries`) and is reached over the
- * PSF-Server HTTP API; this file is the client for those endpoints.
+ * PSF-HTTP API; this file is the client for those endpoints.
  *
  * The move was not about tidiness. Two processes reading and writing the same database is two
  * authorities, and they disagreed where it mattered: the portal read `building.faction_id` to colour
@@ -83,7 +83,7 @@ export const AVATAR = Object.freeze({
 export async function connect_to_db() {
 	try {
 		const stats = await admin_get('/portal/stats');
-		console.log(`Data layer reachable via the PSF-Server HTTP API (${stats.accounts} accounts, ${stats.characters} characters)`);
+		console.log(`Data layer reachable via the PSF-HTTP API (${stats.accounts} accounts, ${stats.characters} characters)`);
 	} catch (e) {
 		console.log('WARNING: data layer unreachable at startup -- is the login server up? ' + e);
 	}

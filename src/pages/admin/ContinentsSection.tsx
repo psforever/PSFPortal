@@ -53,7 +53,7 @@ interface Menu {
  * World Server Management -> continents. Renders every continent's map at once (no lattice overlay),
  * each coloured by live base ownership and refreshed every 60s. Right-clicking a facility sets that
  * one base's owner; the per-continent buttons sweep the whole continent. Both go through the live
- * PSF-Server HTTP API path (set_building_faction / set_zone_faction), so the running world server updates too.
+ * PSF-HTTP API path (set_building_faction / set_zone_faction), so the running world server updates too.
  */
 export function ContinentsSection() {
   const [summaries, setSummaries] = useState<ContinentSummary[] | null>(null)

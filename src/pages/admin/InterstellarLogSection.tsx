@@ -49,7 +49,7 @@ function empire(id: number): string {
 
 /**
  * Audit -> Interstellar Log. Who hacked what, and when bases flipped or failed to flip. Held in
- * memory by the PSF-Server HTTP API actor (never persisted) and pruned after seven days, so it
+ * memory by the PSF-HTTP API actor (never persisted) and pruned after seven days, so it
  * is empty after a world server restart -- expected rather than an error.
  */
 export function InterstellarLogSection() {
@@ -60,7 +60,7 @@ export function InterstellarLogSection() {
    * Zone id -> continent name, from the continent index the portal already ships.
    *
    * The world server reports a zone by its internal id (`z1`, `home2`), which is what the rest of the
-   * PSF-Server HTTP API speaks. Resolving it here rather than server-side keeps the event payload as the
+   * PSF-HTTP API speaks. Resolving it here rather than server-side keeps the event payload as the
    * server's own vocabulary and reuses a file the portal loads anyway -- and an id the index does not
    * know still renders as itself rather than disappearing.
    */
@@ -111,7 +111,7 @@ export function InterstellarLogSection() {
         {!events ? (
           unavailable ? (
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-              The PSF-Server HTTP API is unavailable; retrying every 60&nbsp;seconds.
+              The PSF-HTTP API is unavailable; retrying every 60&nbsp;seconds.
             </p>
           ) : (
             <div className="space-y-2.5 py-1">
