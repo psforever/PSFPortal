@@ -67,7 +67,19 @@ export function Modal({
           role="dialog"
           aria-modal="true"
           aria-label={title}
-          className={`relative ${wide ? 'w-auto max-w-none' : 'w-full max-w-2xl'}`}
+          /*
+           * A `wide` dialog takes the room it is given, up to a limit, rather than shrinking to fit
+           * its contents.
+           *
+           * `w-auto` was the wrong instruction for anything holding an SVG. An `<svg>` with no width
+           * attribute has an intrinsic size of 300x150, and the continent map is sized `w-full
+           * h-auto` -- so inside a shrink-to-fit dialog the two agreed on 300px and stopped there,
+           * nowhere near the `70vh` cap the map sets for itself. Giving the dialog a real width lets
+           * the `1fr` map column resolve against something, and the map fills it.
+           *
+           * `min-w-0` so a docked side panel can still shrink this rather than overflowing the row.
+           */
+          className={`relative ${wide ? 'w-full min-w-0 max-w-[1600px]' : 'w-full max-w-2xl'}`}
           style={{
             background: 'var(--surface)',
             border: '1px solid var(--border)',

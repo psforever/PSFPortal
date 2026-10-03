@@ -26,7 +26,10 @@ export function Panel({
 
   return (
     <section
-      className={cn('relative bg-[var(--surface)] border', className)}
+      // A column so the body can fill the panel. Panels side by side in a grid are already
+      // stretched to the tallest of the row; without this the body keeps its content height and the
+      // shorter panel renders as a box with everything crowded at the top.
+      className={cn('relative flex flex-col bg-[var(--surface)] border', className)}
       style={{
         borderColor: 'var(--border)',
         clipPath: 'var(--clip-corner-md)'
@@ -44,7 +47,7 @@ export function Panel({
           {title}
         </header>
       )}
-      <div className="p-4">{children}</div>
+      <div className="flex-1 p-4">{children}</div>
     </section>
   )
 }

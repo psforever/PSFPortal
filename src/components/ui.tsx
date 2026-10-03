@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import type { ButtonHTMLAttributes, CSSProperties, InputHTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
@@ -126,16 +127,30 @@ export function SkeletonLines({ lines = 3, className }: { lines?: number; classN
   )
 }
 
+/**
+ * A table of records, optionally with one expanded in place.
+ *
+ * `renderExpanded` returns the detail to show directly beneath a row, or nothing to leave the row
+ * closed. Keeping the detail attached to its row rather than in a panel elsewhere means the record
+ * you clicked and what it says stay together, which matters most in a long list where the two would
+ * otherwise be separated by everything in between.
+ */
 export function DataTable<T>({
   columns,
   rows,
   empty = 'No records.',
-  rowKey
+  rowKey,
+  renderExpanded,
+  isRowActive
 }: {
   columns: { header: string; cell: (row: T) => ReactNode; align?: 'left' | 'right' }[]
   rows: T[]
   empty?: string
   rowKey: (row: T, index: number) => string | number
+  /** Detail rendered in a full-width row under this one; falsy leaves the row closed. */
+  renderExpanded?: (row: T) => ReactNode
+  /** Marks a row as the one currently open, so it reads as the source of the detail below it. */
+  isRowActive?: (row: T) => boolean
 }) {
   if (rows.length === 0) {
     return <p style={{ color: 'var(--text-muted)' }}>{empty}</p>
@@ -161,19 +176,46 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={rowKey(row, i)} className="hover:bg-[var(--surface-raised)]">
-              {columns.map((c) => (
-                <td
-                  key={c.header}
-                  className={cn('py-2 px-2 border-b', c.align === 'right' ? 'text-right' : '')}
-                  style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+          {rows.map((row, i) => {
+            const expanded = renderExpanded?.(row)
+            const active = isRowActive?.(row) ?? Boolean(expanded)
+            return (
+              <Fragment key={rowKey(row, i)}>
+                <tr
+                  className={cn(
+                    'hover:bg-[var(--surface-raised)]',
+                    active && 'bg-[var(--surface-raised)]'
+                  )}
                 >
-                  {c.cell(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
+                  {columns.map((c) => (
+                    <td
+                      key={c.header}
+                      className={cn('py-2 px-2 border-b', c.align === 'right' ? 'text-right' : '')}
+                      style={{
+                        // The open row keeps its bottom edge only where the detail does not follow,
+                        // so an expanded row and its detail read as one block rather than two.
+                        borderColor: expanded ? 'transparent' : 'var(--border)',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
+                      {c.cell(row)}
+                    </td>
+                  ))}
+                </tr>
+                {expanded && (
+                  <tr>
+                    <td
+                      colSpan={columns.length}
+                      className="p-0 border-b"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      {expanded}
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            )
+          })}
         </tbody>
       </table>
     </div>
