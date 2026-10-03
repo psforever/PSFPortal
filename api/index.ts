@@ -9,6 +9,7 @@ import api_me from './me.ts'
 import api_stats from './stats.ts'
 import api_continents from './continents.ts'
 import api_packets from './packets.ts'
+import api_service from './service.ts'
 import { publicRateLimit } from './ratelimit.ts'
 
 const VERSION = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
@@ -39,6 +40,7 @@ api.use(api_info)
 api.use(api_stats)
 api.use(api_continents)
 api.use(api_packets)
+api.use(api_service)
 
 // These calls are gated within their respective routers
 api.use(api_user)

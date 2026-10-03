@@ -25,6 +25,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     items: [{ to: 'accounts', label: 'Accounts' }]
   },
   {
+    title: 'Services',
+    items: [{ to: 'scheduling', label: 'Scheduling' }]
+  },
+  {
     title: 'Audit',
     items: [
       { to: 'interstellar-log', label: 'Interstellar Log' },

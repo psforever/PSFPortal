@@ -9,6 +9,7 @@ import { CombatSection } from './admin/CombatSection'
 import { ContinentsSection } from './admin/ContinentsSection'
 import { InterstellarLogSection } from './admin/InterstellarLogSection'
 import { PacketReviewSection } from './admin/PacketReviewSection'
+import { SchedulingSection } from './admin/SchedulingSection'
 
 /**
  * Admin panel shell: a left sidebar of subsections (grouped by which server they administer) beside
@@ -36,6 +37,7 @@ export function AdminPanel() {
         <Routes>
           <Route index element={<Navigate to="accounts" replace />} />
           <Route path="accounts" element={<AccountsSection />} />
+          <Route path="scheduling" element={<SchedulingSection />} />
           <Route path="avatars" element={<AvatarsSection />} />
           <Route path="continents" element={<ContinentsSection />} />
           <Route path="combat" element={<CombatSection />} />

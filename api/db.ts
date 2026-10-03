@@ -18,7 +18,7 @@
  * down throws, where a database that is down used to throw a `pg` error. Callers already wrapped these
  * in try/catch and answered 500, so that reads the same from outside.
  */
-import { admin_get, admin_post } from './psadmin.ts'
+import { admin_get, admin_post, admin_delete, admin_patch } from './psadmin.ts'
 import { currentCaller } from './caller-context.ts'
 
 function objectFlip(obj) {
@@ -320,4 +320,68 @@ export async function search(term, pagination) {
 export async function get_building_control(zoneId?: string) {
 	const body = await admin_get(zoneId ? `/zones/${encodeURIComponent(zoneId)}/control` : '/zones/control');
 	return body.zones ?? {};
+}
+
+// --- scheduled actions ----------------------------------------------------------------------------
+//
+// The portal's own schedules, stored in the login server's database because the portal has none.
+// See the V019 migration for why, and for how the claim keeps two portal processes from both acting.
+
+export async function get_schedules() {
+	const info = await admin_get('/portal/schedules');
+	return Array.isArray(info?.schedules) ? info.schedules : [];
+}
+
+export async function get_enabled_schedules() {
+	const info = await admin_get('/portal/schedules/enabled');
+	return Array.isArray(info?.schedules) ? info.schedules : [];
+}
+
+export async function create_schedule(row: Record<string, unknown>) {
+	return await admin_post('/portal/schedules', row);
+}
+
+export async function delete_schedule(id: number) {
+	return await admin_delete(`/portal/schedules/${encodeURIComponent(id)}`);
+}
+
+export async function set_schedule_enabled(id: number, enabled: boolean) {
+	return await admin_patch(`/portal/schedules/${encodeURIComponent(id)}`, { enabled });
+}
+
+/**
+ * Try to take the right to run a schedule. Answers `{ claimed: 1 }` to exactly one caller.
+ *
+ * `notAfter` is the instant the claim is for -- the due time being acted on -- so a second attempt
+ * at the same due time cannot succeed however many processes make it.
+ */
+export async function claim_schedule(id: number, notAfter: number) {
+	const r = await admin_post(`/portal/schedules/${encodeURIComponent(id)}/claim`, { not_after: notAfter });
+	return Number(r?.claimed ?? 0) > 0;
+}
+
+/**
+ * Claim a condition-triggered run by disarming it, atomically.
+ *
+ * A time trigger claims against its due instant, which every process computes identically. A
+ * condition has no such instant -- it is true continuously -- so the arming flag is the claim
+ * instead: only the update that actually flips it wins.
+ */
+export async function claim_armed_schedule(id: number) {
+	const r = await admin_post(`/portal/schedules/${encodeURIComponent(id)}/claim-armed`, {});
+	return Number(r?.claimed ?? 0) > 0;
+}
+
+export async function record_schedule_result(id: number, result: string, armed: boolean) {
+	return await admin_post(`/portal/schedules/${encodeURIComponent(id)}/result`, { result, armed });
+}
+
+export async function set_schedule_armed(id: number, armed: boolean) {
+	return await admin_post(`/portal/schedules/${encodeURIComponent(id)}/armed`, { armed });
+}
+
+/** The action catalogue, from the world server where the actions are implemented. */
+export async function get_schedule_actions() {
+	const info = await admin_get('/portal/schedules/actions');
+	return Array.isArray(info?.actions) ? info.actions : [];
 }
