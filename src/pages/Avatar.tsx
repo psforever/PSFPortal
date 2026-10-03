@@ -4,9 +4,12 @@ import { KdHistory } from '@/components/KdHistory'
 import { Panel } from '@/components/Panel'
 import { hasIcon, ItemIcon } from '@/components/ItemIcon'
 import { Alert, DataTable, Spinner } from '@/components/ui'
+import { Button } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import { factionById } from '@/lib/factions'
 import { battleRankProgress, commandRankProgress, type RankProgress } from '@/lib/ranks'
+import { useUser } from '@/state/UserContext'
+import { AvatarProgressDialog } from './admin/AvatarProgressDialog'
 
 /** GET /api/avatar/:avatar — note the API returns `faction`, not `faction_id`. */
 interface AvatarDetail {
@@ -107,6 +110,8 @@ export function Avatar() {
   const { id } = useParams<{ id: string }>()
   const [avatar, setAvatar] = useState<AvatarDetail | null>(null)
   const [weapons, setWeapons] = useState<WeaponStat[] | null>(null)
+  const [editing, setEditing] = useState(false)
+  const { isAdmin } = useUser()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -143,10 +148,33 @@ export function Avatar() {
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <Panel title="Character" className="lg:col-span-1">
-        <h1 className={`text-2xl font-bold ${faction?.cls ?? ''}`}>{avatar.name}</h1>
-        <p className="mt-1 text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-          {faction?.name ?? 'Unknown empire'}
-        </p>
+        {/*
+          * The name gets the full width of the panel, and the Edit button sits beside the empire
+          * line beneath it.
+          *
+          * The obvious arrangement -- name left, button top-right -- puts the two in competition for
+          * a panel that is only about 240px wide on a three-column layout. A character name is one
+          * long word, so it cannot wrap at a sensible point: it either overflows under the button, or
+          * (once allowed to break) shatters mid-word into "ThisAcco / untGetsB / anned". The empire
+          * line is short and predictable, so pairing the button with THAT leaves the name a whole
+          * line to itself and removes the conflict rather than mitigating it.
+          *
+          * `break-words` stays as a backstop for a very long name in a very narrow column.
+          */}
+        <h1 className={`text-2xl font-bold break-words ${faction?.cls ?? ''}`}>{avatar.name}</h1>
+        <div className="mt-1 flex items-center gap-3">
+          <p
+            className="text-xs uppercase tracking-[0.2em]"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            {faction?.name ?? 'Unknown empire'}
+          </p>
+          {isAdmin && (
+            <Button variant="ghost" className="ml-auto shrink-0 px-3 py-1" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+          )}
+        </div>
 
         <div className="mt-4 space-y-3">
           <RankRow
@@ -195,6 +223,19 @@ export function Avatar() {
             <dd>{formatDate(avatar.last_login)}</dd>
           </div>
         </dl>
+
+        {editing && (
+          <AvatarProgressDialog
+            avatarId={avatar.id}
+            name={avatar.name}
+            bep={Number(avatar.bep) || 0}
+            cep={Number(avatar.cep) || 0}
+            onClose={() => setEditing(false)}
+            // Take the totals the world server actually applied rather than the ones that were asked
+            // for: a logged-in character may have earned experience between the two.
+            onSaved={(r) => setAvatar((prev) => (prev ? { ...prev, bep: r.bep, cep: r.cep } : prev))}
+          />
+        )}
       </Panel>
 
       <div className="grid gap-4 lg:col-span-2">

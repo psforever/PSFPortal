@@ -65,6 +65,21 @@ const CEP_THRESHOLDS: readonly number[] = [
   500_000 // 5
 ]
 
+/**
+ * The experience a rank begins at.
+ *
+ * A rank is not stored anywhere -- only experience is, and the rank is derived from it -- so setting
+ * a character to BR12 means writing BR12's threshold. This is the same table the derivation reads,
+ * so the two cannot disagree.
+ */
+export function bepForBattleRank(rank: number): number {
+  return BEP_THRESHOLDS[Math.min(Math.max(rank, 1), MAX_BATTLE_RANK)]
+}
+
+export function cepForCommandRank(rank: number): number {
+  return CEP_THRESHOLDS[Math.min(Math.max(rank, 0), MAX_COMMAND_RANK)]
+}
+
 export const MAX_BATTLE_RANK = BEP_THRESHOLDS.length - 1
 export const MAX_COMMAND_RANK = CEP_THRESHOLDS.length - 1
 

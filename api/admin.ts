@@ -1,6 +1,6 @@
 import express from 'express'
 import * as db from './db.ts'
-import { set_account_ban, set_account_gm, set_avatar_permissions, transfer_player, place_vehicle, get_squads, disband_squad, remove_squad_member } from './psadmin.ts'
+import { set_account_ban, set_account_gm, set_avatar_permissions, transfer_player, place_vehicle, set_avatar_progress, get_squads, disband_squad, remove_squad_member } from './psadmin.ts'
 import { NEED_ADMIN, get_pagination, get_filter, get_sort, fetch_user_middleware } from './util.ts'
 
 const api = express.Router();
@@ -187,6 +187,28 @@ api.post('/squads/members/:char/remove', NEED_ADMIN, async (req, res) => {
 	}
 	try {
 		res.status(200).json(await remove_squad_member(charId, req.session_account?.username));
+	} catch (e) {
+		res.status(503).json({ message: e instanceof Error ? e.message : 'error' });
+	}
+});
+
+// Set a character's battle/command experience. Absolute totals; either may be omitted. The world
+// server applies it to a logged-in session where there is one, and writes the row where there is not.
+api.post('/avatars/:avatar/progress', NEED_ADMIN, async (req, res) => {
+	const avatar = Number(req.params.avatar);
+	if (!Number.isInteger(avatar) || avatar < 0) {
+		res.status(400).json({ message: 'invalid avatar id' });
+		return;
+	}
+	const values: { bep?: number; cep?: number } = {};
+	if (req.body?.bep !== undefined) values.bep = Number(req.body.bep);
+	if (req.body?.cep !== undefined) values.cep = Number(req.body.cep);
+	if (values.bep === undefined && values.cep === undefined) {
+		res.status(400).json({ message: 'bep or cep required' });
+		return;
+	}
+	try {
+		res.status(200).json(await set_avatar_progress(avatar, values, req.session_account?.username));
 	} catch (e) {
 		res.status(503).json({ message: e instanceof Error ? e.message : 'error' });
 	}

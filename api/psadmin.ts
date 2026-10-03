@@ -459,6 +459,28 @@ export async function get_packets(viewer: string, since: number, limit = 200) {
 }
 
 /**
+ * Set a character's battle and command experience THROUGH THE WORLD SERVER, which is the authority.
+ *
+ * Not a database write, and deliberately so: battle rank governs implant slots and uniform, so a rank
+ * set in Postgres would leave a demoted character holding implants they can no longer support and a
+ * promoted one gaining nothing until their next login. The world server routes it through the same
+ * experience path a player earns experience by. Values are absolute totals; omit one to leave it.
+ * Returns { avatar_id, name, bep, cep, battle_rank, command_rank, applied_live }.
+ */
+export async function set_avatar_progress(
+	avatarId: number,
+	values: { bep?: number; cep?: number },
+	actor?: string
+) {
+	if (!Number.isInteger(avatarId) || avatarId < 0) throw new Error('invalid avatar id');
+	const body: Record<string, number> = {};
+	if (Number.isFinite(values.bep)) body.bep = Math.max(0, Math.trunc(values.bep as number));
+	if (Number.isFinite(values.cep)) body.cep = Math.max(0, Math.trunc(values.cep as number));
+	if (Object.keys(body).length === 0) throw new Error('bep or cep required');
+	return await admin_post(`/avatars/${avatarId}/progress`, body, actor);
+}
+
+/**
  * Every squad the world server is holding, with its members.
  *
  * Squads live only in the world server's memory -- there is no squad table -- so this is the only
