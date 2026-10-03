@@ -17,7 +17,10 @@ export default defineConfig({
   build: {
     outDir: 'public',
     emptyOutDir: true,
-    sourcemap: true
+    // Maps only outside production. `express.static('public')` serves whatever is in the output
+    // directory, so a production build with maps publishes the entire readable frontend -- including
+    // the shape of every admin call -- to anyone who appends `.map` to a bundle URL.
+    sourcemap: process.env.NODE_ENV !== 'production'
   },
   server: {
     port: 5173,

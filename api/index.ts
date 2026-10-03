@@ -21,8 +21,11 @@ if (process.env.NODE_ENV !== "production") {
 	});
 }
 
-api.use(bodyParser.json());
-api.use(bodyParser.urlencoded({ extended: true }));
+// An explicit, small body limit. The default is already 100kb, but stating it means a future change
+// to a route that accepts a large payload has to be a deliberate decision rather than an inherited
+// default nobody looked at.
+api.use(bodyParser.json({ limit: '64kb' }));
+api.use(bodyParser.urlencoded({ extended: true, limit: '64kb' }));
 
 api.use(api_auth)
 api.use(api_info)
@@ -38,8 +41,12 @@ api.get("/", async (req, res, next) => {
 	res.status(200).json({message : 'PSFPortal ' + VERSION + ' API base. Created by Chord for the PSForever Project: https://psforever.net'})
 });
 
+// Client-side telemetry for a route the SPA could not resolve. The value is caller-controlled and
+// unauthenticated, so it is truncated and stripped of anything that would let it forge log lines --
+// an endpoint whose whole purpose is to write attacker text into a log needs to be dull about it.
 api.post("/bad_route", async (req, res, next) => {
-	console.log("BAD APP ROUTE:", req.body.route)
+	const route = String(req.body?.route ?? '').replace(/[\r\n]/g, ' ').slice(0, 200);
+	console.log("BAD APP ROUTE:", route)
 	res.status(200).json({message : 'received'})
 });
 

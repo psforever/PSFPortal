@@ -21,7 +21,9 @@ COPY . .
 # Client-derived assets (data/) are gitignored and absent from a clean checkout, so create the
 # directory unconditionally -- otherwise the runtime COPY below fails on a fresh clone. An image
 # built WITHOUT them is fully functional, just showing internal object names and plain grid tiles.
-RUN mkdir -p data && npm run build
+# NODE_ENV must be set for the BUILD, not just the runtime stage below: vite.config.ts gates source
+# maps on it, and a map emitted here would be copied into the image and served publicly.
+RUN mkdir -p data && NODE_ENV=production npm run build
 
 # ---- runtime stage: the Express server + built assets ----
 FROM node:24-bookworm-slim
