@@ -100,9 +100,25 @@ export async function fetch_user_middleware(req, res, next, id) {
 	}
 }
 
+/**
+ * Refusals carry a stable code as well as a message.
+ *
+ * "You are not signed in" and "you are signed in but not allowed this" are different answers and the
+ * client has to act differently on them -- the first should sign the session out, the second must
+ * not, or a player glancing at an admin URL would be logged out for their trouble. They used to be
+ * told apart only by the English in `message`, which is not something a client should be parsing.
+ *
+ * The status codes now say it too: 401 for unauthenticated, 403 for authenticated-and-forbidden,
+ * which is what those codes mean.
+ */
+export const AUTH_ERRORS = {
+	session: 'session_required',
+	admin: 'admin_required'
+} as const;
+
 async function sessionRequired(req, res, next) {
 	if (!req.session || !req.session.account_id) {
-		res.status(403).json({message: 'session required'})
+		res.status(401).json({message: 'session required', error: AUTH_ERRORS.session})
 	} else {
 		if (req.session_account) {
 			next()
@@ -128,12 +144,12 @@ async function sessionRequired(req, res, next) {
 async function adminRequired(req, res, next) {
 	if (!req.session_account) {
 		console.log("ERROR: sessionRequired needs to be called before adminRequired")
-		res.status(403).json({message: 'session required'})
+		res.status(401).json({message: 'session required', error: AUTH_ERRORS.session})
 	} else {
 		if (req.session_account.gm === true && req.session_account.inactive === false) {
 			next();
 		} else {
-			res.status(403).json({message : 'admin required'})
+			res.status(403).json({message: 'admin required', error: AUTH_ERRORS.admin})
 		}
 	}
 }

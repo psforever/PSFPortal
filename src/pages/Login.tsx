@@ -10,7 +10,7 @@ export function Login() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const { refresh } = useUser()
+  const { refresh, sessionExpired } = useUser()
   const navigate = useNavigate()
 
   async function onSubmit(event: FormEvent) {
@@ -37,6 +37,12 @@ export function Login() {
   return (
     <div className="max-w-md mx-auto">
       <Panel title="Log In">
+        {/* Says why someone is looking at this page when they did not ask to be. Only shown when
+            the session ended on its own; a deliberate sign-out needs no explanation. An error from
+            this form's own attempt supersedes it. */}
+        {!error && sessionExpired && (
+          <Alert kind="info">Your session ended. Please sign in again.</Alert>
+        )}
         {error && <Alert kind="error">{error}</Alert>}
 
         <form onSubmit={onSubmit} className="space-y-4">

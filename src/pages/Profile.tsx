@@ -29,11 +29,16 @@ export function Profile() {
       .then(setProfile)
       .catch((e: unknown) =>
         setError(
-          e instanceof ApiError && e.status === 403
-            ? 'You do not have permission to view this account.'
-            : e instanceof Error
-              ? e.message
-              : 'Failed to load profile'
+          // 401 is handled globally -- the session is gone and the app has already signed out -- so
+          // this only has to phrase it, not act on it. 403 is the other case: signed in, but not
+          // this account's. Neither should surface the API's own wording as an error.
+          e instanceof ApiError && e.status === 401
+            ? 'Your session ended. Please sign in again.'
+            : e instanceof ApiError && e.status === 403
+              ? 'You do not have permission to view this account.'
+              : e instanceof Error
+                ? e.message
+                : 'Failed to load profile'
         )
       )
 
