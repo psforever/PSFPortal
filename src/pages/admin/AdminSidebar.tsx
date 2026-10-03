@@ -26,10 +26,10 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   },
   {
     title: 'Audit',
-    // Admin Log always stays last.
     items: [
       { to: 'interstellar-log', label: 'Interstellar Log' },
-      { to: 'admin-log', label: 'Admin Log' }
+      { to: 'admin-log', label: 'Admin Log' },
+      { to: 'packet-review', label: 'Packet Review' }
     ]
   }
 ]

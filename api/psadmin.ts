@@ -407,3 +407,54 @@ export async function get_interstellar_log() {
 		events: Array.isArray(info.events) ? info.events : []
 	};
 }
+
+/**
+ * Packet Review: the opcode tables, both spaces, with what is charted, what is armed right now, and
+ * which opcodes may never be captured because they carry a credential.
+ */
+export async function get_packet_opcodes() {
+	const info = await admin_get('/packet-review/opcodes');
+	return {
+		opcodes: Array.isArray(info.opcodes) ? info.opcodes : [],
+		redacted: info.redacted ?? {},
+		state: info.state ?? null
+	};
+}
+
+/**
+ * Join the shared capture, or renew a place already held, with this page's selection.
+ *
+ * Called to start collecting AND on every poll while it continues. Capture on the world server lives
+ * only as long as somebody keeps calling this, which is what stops a forgotten tab from leaving the
+ * server accumulating player traffic. The selection travels with each call so a change made in the
+ * UI applies on the next collection without the two ever disagreeing.
+ */
+export async function packet_subscribe(viewer: string, game: number[], control: number[]) {
+	return await admin_post('/packet-review/subscribe', { viewer, game, control });
+}
+
+/** Give up a place at once, rather than waiting for the lease to lapse. */
+export async function packet_leave(viewer: string) {
+	return await admin_post('/packet-review/leave', { viewer });
+}
+
+/** Stop capture for every watcher, whoever started it. */
+export async function packet_stop_all() {
+	return await admin_post('/packet-review/stop', {});
+}
+
+/**
+ * Read forward from a cursor. Reading does not consume: several admins share one capture, each with
+ * its own cursor, so a second reviewer costs a cursor rather than a second copy of the traffic.
+ */
+export async function get_packets(viewer: string, since: number, limit = 200) {
+	const q = new URLSearchParams({ viewer, since: String(since), limit: String(limit) });
+	const info = await admin_get(`/packet-review?${q.toString()}`);
+	return {
+		packets: Array.isArray(info.packets) ? info.packets : [],
+		cursor: Number(info.cursor ?? since),
+		oldest: Number(info.oldest ?? 0),
+		state: info.state ?? null
+	};
+}
+

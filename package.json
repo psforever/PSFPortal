@@ -36,6 +36,7 @@
     "express-session": "^1.19.0",
     "helmet": "^8.3.0",
     "lucide-react": "^0.469.0",
+    "mermaid": "^11.17.2",
     "morgan": "^1.11.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
