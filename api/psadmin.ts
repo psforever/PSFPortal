@@ -3,11 +3,14 @@
 // The response bodies are the same JSON the old protocol returned, so only the transport here
 // changed -- callers are unaffected.
 
+import { currentCaller } from './caller-context.ts'
+
 let error_count = 0;
 let server_info: any = {};
 
 /** Base URL of the PSF-HTTP API, from the PSADMIN env (host:port). */
 let admin_base = '';
+
 
 export async function start_server_polling() {
 	const connect_to = process.env.PSADMIN;
@@ -48,13 +51,28 @@ export function get_server_info() {
 }
 
 /**
- * GET a command's JSON from the PSF-Server HTTP API. The API answers with the same `data` map the old protocol
+ * Headers identifying the caller to the PSF-HTTP API.
+ *
+ * The API authorises per caller: it resolves this session id against the session table it owns and
+ * decides for itself what the account behind it may read. Omitted when there is no request in flight
+ * -- the startup probe and the polling loop act on nobody's behalf and get the public endpoints only.
+ */
+function caller_headers(): Record<string, string> {
+	const sid = currentCaller()?.sessionId;
+	return sid ? { 'X-PSF-Session': sid } : {};
+}
+
+/**
+ * GET a command's JSON from the PSF-HTTP API. The API answers with the same `data` map the old protocol
  * did, including `{ error: true, message }` on failure -- surfaced here as a thrown Error so callers
  * don't read a failure as an empty result.
  */
 export async function admin_get(path) {
-	if (!admin_base) throw new Error('PSF-Server HTTP API not configured');
-	const res = await fetch(`${admin_base}${path}`, { signal: AbortSignal.timeout(6000) });
+	if (!admin_base) throw new Error('PSF-HTTP API not configured');
+	const res = await fetch(`${admin_base}${path}`, {
+		headers: caller_headers(),
+		signal: AbortSignal.timeout(6000)
+	});
 	const body: any = await res.json().catch(() => ({}));
 	if (!res.ok || body?.error) {
 		throw new Error(`PSF-HTTP API: ${body?.message ?? res.statusText}`);
@@ -67,8 +85,10 @@ export async function admin_post(path, json, actor?: string) {
 	const res = await fetch(`${admin_base}${path}`, {
 		method: 'POST',
 		headers: {
+			...caller_headers(),
 			'Content-Type': 'application/json',
-			// Identifies the portal account for the world server's in-memory audit log.
+			// Kept for compatibility, but no longer what the audit log believes: the API attributes an
+			// action to the account it resolved from the session above, not to this claim.
 			...(actor ? { 'X-Admin-User': actor } : {})
 		},
 		body: JSON.stringify(json ?? {}),
@@ -92,7 +112,7 @@ async function admin_write(method: string, path: string, json?: any) {
 	if (!admin_base) throw new Error('PSF-HTTP API not configured');
 	const res = await fetch(`${admin_base}${path}`, {
 		method,
-		headers: { 'Content-Type': 'application/json' },
+		headers: { ...caller_headers(), 'Content-Type': 'application/json' },
 		body: json === undefined ? undefined : JSON.stringify(json),
 		signal: AbortSignal.timeout(4000)
 	});

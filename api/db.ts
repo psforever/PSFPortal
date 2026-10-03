@@ -19,6 +19,7 @@
  * in try/catch and answered 500, so that reads the same from outside.
  */
 import { admin_get, admin_post } from './psadmin.ts'
+import { currentCaller } from './caller-context.ts'
 
 function objectFlip(obj) {
 	const ret = {};
@@ -165,7 +166,17 @@ export async function create_account(username, password) {
  */
 export async function validate_account(username, password) {
 	try {
-		const body = await admin_post('/portal/login', { username, password });
+		// The session id goes with the credentials: the login server binds the session to the account
+		// itself, in the same call that checks the password. It is the only writer of that binding --
+		// storing a session cannot assert an identity -- so this is what makes the caller checks on
+		// every other endpoint mean anything.
+		const caller = currentCaller();
+		const body = await admin_post('/portal/login', {
+			username,
+			password,
+			session_id: caller?.sessionId,
+			expires: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+		});
 		return body.account_id;
 	} catch (e) {
 		// A rejected credential is not an error condition to propagate; every other failure is.

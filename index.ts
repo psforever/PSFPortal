@@ -7,6 +7,7 @@ import dotenv from 'dotenv'
 import api from './api/index.ts'
 import { start_server_polling } from './api/psadmin.ts'
 import { AdminApiSessionStore } from './api/session-store.ts'
+import { withCaller } from './api/caller-context.ts'
 import * as db from './api/db.ts'
 
 dotenv.config();
@@ -149,7 +150,12 @@ if (MODE === 'production' && (COOKIE_SECRET.length < 32 || COOKIE_SECRET.include
 	})
 
 	// All API requests have a session. Other requests are static
-	app.use("/api", sessionMiddleware, api);
+	// Attach the caller AFTER the session middleware, so req.sessionID exists, and BEFORE the routes,
+	// so every PSF-HTTP API call made while serving this request carries it. The API authorises per
+	// caller; without this it would see an anonymous request and refuse anything account-scoped.
+	const attachCaller = (req, _res, next) => withCaller({ sessionId: req.sessionID }, next);
+
+	app.use("/api", sessionMiddleware, attachCaller, api);
 
 	// TODO: inject csrf token into meta of index.html
 	app.use(express.static('public'));
