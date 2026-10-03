@@ -257,6 +257,10 @@ const CAPITOLS = new Set(['Thoth', 'Voltan', 'Neit', 'Anguta', 'Eisa', 'Verica']
  */
 const SANCTUARY_STRUCTURES = new Set([
   'orbital_building_nc', 'orbital_building_tr', 'orbital_building_vs',
+  // The spawn buildings -- nine per sanctuary, three per warpgate area, named Cyssor_Spawn1 and so
+  // on in the zonemap. Note vt_spawn is NOT one of these: those objects are named NC_NW_Tport_01,
+  // i.e. the teleport pads, which is why they are a tenth the size.
+  'VT_building_nc', 'VT_building_tr', 'VT_building_vs',
   'vt_vehicle', 'vt_dropship', 'vt_spawn',
   // The pad a vehicle materialises on, the doors that open with it, and the air pads.
   'mb_pad_creation', 'dropship_pad_doors', 'pad_landing', 'pad_landing_tower_frame'

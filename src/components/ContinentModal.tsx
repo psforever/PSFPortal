@@ -4,9 +4,28 @@ import { Modal } from '@/components/Modal'
 import { Alert, Spinner } from '@/components/ui'
 import { api } from '@/lib/api'
 import { gateDestinations } from '@/lib/factions'
-import type { Continent, ContinentSummary, ControlResponse } from '@/lib/types'
+import type { Continent, ContinentSummary, ControlResponse, Facility } from '@/lib/types'
 
 /** How often an open map re-checks base ownership. */
+/**
+ * What each facility category is called in the list.
+ *
+ * The stored categories are the map data's own vocabulary -- `major` for a real facility, `minor`
+ * for the cavern geowarps -- which is fine for driving marker sizes and draw order but reads as
+ * jargon next to a base name. A `Record` over the union rather than a lookup with a fallback, so
+ * adding a fifth category fails to compile here instead of quietly printing the raw key.
+ *
+ * Warpgates and geowarps both read as "Gate": they are stored apart because they draw differently,
+ * not because a player thinks of them as different things, and the name beside the label already
+ * says which one it is.
+ */
+const CATEGORY_LABEL: Record<Facility['category'], string> = {
+  major: 'Facility',
+  minor: 'Gate',
+  warpgate: 'Gate',
+  tower: 'Tower'
+}
+
 const CONTROL_REFRESH_MS = 60_000
 
 const FACTION_NAME: Record<number, string> = { 0: 'TR', 1: 'NC', 2: 'VS' }
@@ -200,7 +219,7 @@ export function ContinentModal({
                         {nameOf(f)}
                       </span>
                       <span className="ml-2 text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
-                        {f.category}
+                        {CATEGORY_LABEL[f.category]}
                       </span>
                     </span>
                     <span className="shrink-0 text-xs" style={{ color: 'var(--text-muted)' }}>
