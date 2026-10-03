@@ -13,16 +13,16 @@ export interface AdminSection {
 
 export const ADMIN_SECTIONS: AdminSection[] = [
   {
-    title: 'Login Server Management',
-    items: [{ to: 'accounts', label: 'Accounts' }]
-  },
-  {
     title: 'World Server Management',
     items: [
       { to: 'avatars', label: 'Avatars' },
       { to: 'continents', label: 'Continents' },
       { to: 'combat', label: 'Combat' }
     ]
+  },
+  {
+    title: 'Login Server Management',
+    items: [{ to: 'accounts', label: 'Accounts' }]
   },
   {
     title: 'Audit',
