@@ -5,6 +5,7 @@ import { AdminPanel } from '@/pages/AdminPanel'
 import { Avatar } from '@/pages/Avatar'
 import { Home } from '@/pages/Home'
 import { Leaderboard } from '@/pages/Leaderboard'
+import { Stats } from '@/pages/Stats'
 import { Login } from '@/pages/Login'
 import { Outfit } from '@/pages/Outfit'
 import { PlayerPanel } from '@/pages/PlayerPanel'
@@ -37,6 +38,7 @@ function Shell() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/stats" element={<Stats />} />
             <Route path="/avatar/:id" element={<Avatar />} />
             <Route path="/me/*" element={<PlayerPanel />} />
             <Route path="/admin/*" element={<AdminPanel />} />

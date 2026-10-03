@@ -50,6 +50,9 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
       <Item to="/leaderboard" onNavigate={onNavigate}>
         Leaderboard
       </Item>
+      <Item to="/stats" onNavigate={onNavigate}>
+        Stats
+      </Item>
       {/* Every signed-in player gets this, admin or not -- it is the point of letting non-GMs log in. */}
       {loggedIn && (
         <Item to="/me" onNavigate={onNavigate}>

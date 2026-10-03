@@ -255,6 +255,18 @@ export async function get_top_kills_byDate() {
 	return await admin_get('/portal/leaderboard/top-kills-by-date');
 }
 
+/**
+ * Kills per weapon, already split into a gun board and a vehicle board by the world server.
+ *
+ * The split has to happen there: a kill record names the weapon and never says what the killer was
+ * riding in, so crediting a Liberator for its own bomb means asking the vehicle definitions what
+ * each vehicle is armed with. Guns come back as bare object ids and are named here, from the
+ * client's own tables.
+ */
+export async function get_top_weapons(limit = 15) {
+	return await admin_get(`/portal/leaderboard/top-weapons?limit=${encodeURIComponent(limit)}`);
+}
+
 export async function get_top_outfits() {
 	return await admin_get('/portal/leaderboard/top-outfits');
 }

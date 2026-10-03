@@ -56,6 +56,20 @@ api.get('/top_kills_byDate', cachedJson(TTL.leaderboard, () => "top_kills_byDate
 	return { kills: await db.get_top_kills_byDate() };
 }, { kills: [] }));
 
+// Top Guns and Top Vehicles, both counted from kill activity. The world server decides which
+// weapons belong to a vehicle (it has the definitions); the gun rows arrive as bare object ids and
+// are named here from the client's own tables, the same source the character weapon stats use.
+api.get('/top_weapons', cachedJson(TTL.leaderboard, () => "top_weapons", async (req) => {
+	const info: any = await db.get_top_weapons(15);
+	const guns = (Array.isArray(info?.guns) ? info.guns : []).map((g: any) => ({
+		weapon_id: g.weaponId ?? g.weapon_id,
+		kills: g.kills,
+		name: internalName(g.weaponId ?? g.weapon_id),
+		display: displayName(g.weaponId ?? g.weapon_id)
+	}));
+	return { guns, vehicles: Array.isArray(info?.vehicles) ? info.vehicles : [] };
+}, { guns: [], vehicles: [] }));
+
 api.get('/top_outfits', cachedJson(TTL.leaderboard, () => "top_outfits", async (req) => {
 	return { outfits: await db.get_top_outfits() };
 }, { outfits: [] }));
