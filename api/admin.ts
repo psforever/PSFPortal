@@ -1,6 +1,6 @@
 import express from 'express'
 import * as db from './db.ts'
-import { set_account_ban, set_account_gm, set_avatar_permissions, transfer_player, place_vehicle } from './psadmin.ts'
+import { set_account_ban, set_account_gm, set_avatar_permissions, transfer_player, place_vehicle, get_squads, disband_squad, remove_squad_member } from './psadmin.ts'
 import { NEED_ADMIN, get_pagination, get_filter, get_sort, fetch_user_middleware } from './util.ts'
 
 const api = express.Router();
@@ -153,6 +153,44 @@ function set_permissions(field: 'can_gm' | 'can_spectate', value: boolean) {
 		}
 	};
 }
+
+// --- Command: squad administration ---------------------------------------------------------------
+//
+// Squads exist only in the world server's memory, so these are the only view of them anywhere.
+
+api.get('/squads', NEED_ADMIN, async (req, res) => {
+	try {
+		res.status(200).json(await get_squads());
+	} catch (e) {
+		res.status(503).json({ message: 'squad service unavailable', count: 0, squads: [] });
+	}
+});
+
+api.post('/squads/:squad/disband', NEED_ADMIN, async (req, res) => {
+	const squad = Number(req.params.squad);
+	if (!Number.isInteger(squad) || squad < 0) {
+		res.status(400).json({ message: 'invalid squad id' });
+		return;
+	}
+	try {
+		res.status(200).json(await disband_squad(squad, req.session_account?.username));
+	} catch (e) {
+		res.status(503).json({ message: e instanceof Error ? e.message : 'error' });
+	}
+});
+
+api.post('/squads/members/:char/remove', NEED_ADMIN, async (req, res) => {
+	const charId = Number(req.params.char);
+	if (!Number.isInteger(charId) || charId < 0) {
+		res.status(400).json({ message: 'invalid character id' });
+		return;
+	}
+	try {
+		res.status(200).json(await remove_squad_member(charId, req.session_account?.username));
+	} catch (e) {
+		res.status(503).json({ message: e instanceof Error ? e.message : 'error' });
+	}
+});
 
 api.post('/roles/:avatar/add_gm', NEED_ADMIN, set_permissions('can_gm', true));
 api.post('/roles/:avatar/remove_gm', NEED_ADMIN, set_permissions('can_gm', false));

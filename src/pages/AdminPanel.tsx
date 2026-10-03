@@ -6,6 +6,7 @@ import { AdminLogSection } from './admin/AdminLogSection'
 import { AdminSidebar } from './admin/AdminSidebar'
 import { AvatarsSection } from './admin/AvatarsSection'
 import { CombatSection } from './admin/CombatSection'
+import { CommandSection } from './admin/CommandSection'
 import { ContinentsSection } from './admin/ContinentsSection'
 import { InterstellarLogSection } from './admin/InterstellarLogSection'
 import { PacketReviewSection } from './admin/PacketReviewSection'
@@ -41,6 +42,7 @@ export function AdminPanel() {
           <Route path="avatars" element={<AvatarsSection />} />
           <Route path="continents" element={<ContinentsSection />} />
           <Route path="combat" element={<CombatSection />} />
+          <Route path="command" element={<CommandSection />} />
           <Route path="interstellar-log" element={<InterstellarLogSection />} />
           <Route path="packet-review" element={<PacketReviewSection />} />
           <Route path="admin-log" element={<AdminLogSection />} />

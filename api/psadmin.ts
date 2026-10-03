@@ -458,3 +458,25 @@ export async function get_packets(viewer: string, since: number, limit = 200) {
 	};
 }
 
+/**
+ * Every squad the world server is holding, with its members.
+ *
+ * Squads live only in the world server's memory -- there is no squad table -- so this is the only
+ * way to see one. Admin-only: it names online players, their zone and their health.
+ */
+export async function get_squads() {
+	const info = await admin_get('/squads');
+	return { count: info.count ?? 0, squads: Array.isArray(info.squads) ? info.squads : [] };
+}
+
+/** Disband a squad, as though its leader had. */
+export async function disband_squad(squadId: number, actor?: string) {
+	if (!Number.isInteger(squadId) || squadId < 0) throw new Error('invalid squad id');
+	return await admin_post(`/squads/${squadId}/disband`, {}, actor);
+}
+
+/** Remove one character from whichever squad holds them. */
+export async function remove_squad_member(charId: number, actor?: string) {
+	if (!Number.isInteger(charId) || charId < 0) throw new Error('invalid character id');
+	return await admin_post(`/squads/members/${charId}/remove`, {}, actor);
+}

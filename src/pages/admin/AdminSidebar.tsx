@@ -17,7 +17,8 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     items: [
       { to: 'avatars', label: 'Avatars' },
       { to: 'continents', label: 'Continents' },
-      { to: 'combat', label: 'Combat' }
+      { to: 'combat', label: 'Combat' },
+      { to: 'command', label: 'Command' }
     ]
   },
   {

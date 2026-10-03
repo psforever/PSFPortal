@@ -35,6 +35,21 @@ export function factionById(id: number | undefined | null): Faction | undefined 
   return FACTIONS.find((f) => f.id === id)
 }
 
+/**
+ * Look a faction up by the world server's own name for it.
+ *
+ * The world server reports an empire as `PlanetSideEmpire.toString` -- `TR`, `NC`, `VS`, or `NEUTRAL`
+ * -- rather than as the numeric id the database uses. Matching is case-insensitive and treats
+ * `NEUTRAL` as the neutral entry this table calls `NL`, so callers do not have to know that the two
+ * vocabularies disagree on that one name.
+ */
+export function factionByKey(key: string | undefined | null): Faction | undefined {
+  const k = String(key ?? '').trim().toUpperCase()
+  if (!k) return undefined
+  if (k === 'NEUTRAL') return FACTIONS.find((f) => f.key === 'NL')
+  return FACTIONS.find((f) => f.key === k)
+}
+
 /** Class name for an entity's faction, for colouring names in lists. */
 export function factionClass(id: number | undefined | null): string {
   return factionById(id)?.cls ?? ''
