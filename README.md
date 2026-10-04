@@ -1,161 +1,248 @@
 # PSFPortal
-An API + webapp to manage PSForever accounts, characters, and servers.
 
-## Features
-* User registration, login, and sessions
-* Home page
-* Admin management
+A web interface to [PSForever](https://github.com/PSForever/PSF-LoginServer) servers — accounts,
+characters, statistics, and live world administration.
 
-### Upcoming Features
-* Email verification + captcha
-* Changing passwords
-* WorldServer mangement
+The portal is one process: an **Express 5 API** that also serves a **React 19 single-page app** built
+by Vite. It has **no database connection of its own**. Everything — accounts, characters, statistics,
+sessions, even the password check at login — goes through the **PSF-HTTP API**.
 
-## Developing
-**This requires a [relatively modern version](https://nodejs.org/en/download/current/) of Node that supports async/await and ES6 (v13.x+). Tested using v13.3.0. Do not use LTS builds.** You may still get `(node:61412) ExperimentalWarning: The ESM module loader is experimental.`. Ignore this as ESM is essentially stable in recent versions.
-
-**Windows users: Before continuing, run `npm install --global --production windows-build-tools`. Otherwise, `bcrypt` won't install properly.**
-
-First download and install the Node dependencies:
 ```
-git clone https://github.com/psforever/PSFPortal
-cd PSFPortal/
+     browser ──► Express (:8080) ──► PSF-LoginServer ──► PostgreSQL
+                  + built SPA        PSF-HTTP API (:51002)
+```
+
+That single arrow is deliberate. The portal used to hold its own PostgreSQL pool, which made two
+processes authoritative over the same data, and they disagreed where it mattered: the portal read
+`building.faction_id` to colour a continent map while the login server held the faction the world was
+actually enforcing, and the write behind a capture is asynchronous, so a map could show the base's
+previous owner. Login had the same shape of problem from the other side — the portal hashed with
+Node's bcrypt, which emits `$2b$` revisions the server's own checker rejects, so a password could be
+accepted here and refused in-game.
+
+One consequence worth knowing: **the login server is now a hard dependency**. Without it the portal
+serves its static pages and nothing else.
+
+---
+
+## What it does
+
+### Public
+
+| | |
+|---|---|
+| **Home** | server status, current population by empire, live continent control |
+| **Continents** | on the home page — vector continent maps with facility ownership, lattice links, and warp-gate empires |
+| **Leaderboard** | top kills (all-time and by date), top outfits |
+| **Avatar / Outfit / Profile** | character sheets, weapon statistics, K/D history, outfit rosters |
+| **Register / Login** | accounts and sessions, both held by the login server |
+
+### Player panel (`/me`) — any logged-in account
+
+Non-GM accounts get a panel of their own. It shows **only the characters on the signed-in account**;
+asking for someone else's returns a 404 that is indistinguishable from a character that does not
+exist.
+
+* character list with rank, battle/command experience, and playtime
+* **locker** contents, drawn as the client's own grid
+* **loadouts** — every saved favourite, rendered as the in-game inventory: exosuit holsters and grid,
+  or a vehicle's trunk, with real item artwork, stack sizes and ammunition counts
+
+### Admin panel (`/admin`) — GM accounts only
+
+* **Accounts** — search, ban/unban, grant/revoke GM
+* **Avatars** — grant/revoke per-character GM and spectate roles
+* **Continents** — inspect and set facility ownership, one base or a whole continent; randomize or
+  apply a saved global layout
+* **Combat** — a live map per zone: players, vehicles and deployables, with actions against a
+  selected entity, plus force-recall to sanctuary and zone transfers
+* **Construction** — place a vehicle, a deployed AMS, or a deployed Router at a clicked point, for a
+  chosen empire; ground height and attitude come from the server's terrain data
+* **Admin log** — every audited administrative action
+* **Interstellar log** — facility ownership events as they happen (see below)
+
+---
+
+## The interstellar log
+
+A rolling seven-day record of everything that changes — or tries to change — who owns a facility.
+Each entry carries the continent, the facility, who caused it, and the empires before and after.
+
+| Kind | Shown as | Meaning | Flips ownership |
+|---|---|---|---|
+| `HackStarted` | Hack Started | a control console hack began | no |
+| `HackHoldCompleted` | Hack and Hold Completed | a plain hack-and-hold ran its timer out | **yes** |
+| `HackHoldFailed` | Hack and Hold Failed | the hack was cleared before the timer expired | no |
+| `LluPickedUp` | LLU Picked Up | a player lifted the Lattice Logic Unit off its socket | no |
+| `LluDelivered` | LLU Delivered | the unit reached its destination | **yes** |
+| `LluLost` | LLU Lost | the unit timed out or the hack lapsed while it was in the field | no |
+| `LluDestroyed` | LLU Destroyed | the unit was destroyed, or the hack was resecured while it was out | no |
+| `LluBypassCompleted` | LLU Bypass — Hack and Hold Completed | a hack against a *neutral* CTF base, where no unit is required | **yes** |
+| `LluBypassFailed` | LLU Bypass — Hack and Hold Failed | that same hack was cleared in time | no |
+| `PortalDesignation` | Portal Designation | ownership assigned from this admin panel rather than won in the field | **yes** |
+
+The nine field events come from the login server's capture machinery (`HackCaptureActor`,
+`CaptureFlagManager`) and name the facility directly. `PortalDesignation` is emitted by the PSF-HTTP API
+itself; a single-facility designation names the facility, while a whole-continent or bulk assignment
+says so rather than naming one.
+
+Continent names are resolved in the browser from `static/continents/index.json` — the world server
+reports a zone by its internal id (`z1`, `home2`), which is the vocabulary the rest of the PSF-HTTP API
+speaks, and an id the index does not know still renders as itself.
+
+---
+
+## Getting started
+
+**Requirements:** Node **24+** (the Express server is TypeScript executed directly, via Node's native
+type stripping — there is no server build step) and a running **PSF-LoginServer** to talk to. No
+database client, driver or credentials are needed here.
+
+```bash
+git clone https://github.com/GeekOfWires/PSFPortal
+cd PSFPortal
 npm install
 ```
 
-You should see no errors (warnings are okay).
-
 ### Database
 
-Next, install PostgreSQL from your package manager or the following links:
+There is nothing to set up. The portal never connects to PostgreSQL — the login server does, and
+provisions the schema with its own Flyway migrations. `db/schema.sql` is kept only as a reference for
+the columns the portal's queries project.
 
-* Windows - [Official Downloads](https://www.postgresql.org/download/windows/)
-* Linux - [Debian](https://www.postgresql.org/download/linux/debian/) or [Ubuntu](https://www.postgresql.org/download/linux/ubuntu/)
-* macOS - Application https://www.postgresql.org/download/ (or `brew install postgresql && brew services start postgresql`)
+### Configuration
 
-Create a database named `psforever` using `psql` or a graphical tool such as [pgAdmin](https://www.pgadmin.org/download/) (highly recommended).
-Then create a user named `psforever` with a password of `psforever` and `GRANT` it access to the `psforever` database, public tables, and public sequences.
-This can be summarized with the following raw SQL commands:
+Create a `.env` in the project root:
 
-```sql
-CREATE USER psforever;
-CREATE DATABASE psforever;
-GRANT ALL PRIVILEGES ON DATABASE psforever TO psforever;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO psforever;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO psforever;
-ALTER USER psforever WITH PASSWORD 'psforever';
+```ini
+PORT=8080
+NODE_ENV=development
+COOKIE_SECRET=make_this_long_and_random
+PSADMIN=127.0.0.1:51002
 ```
 
-Load the DB schema into the database using the command line:
+| Variable | Meaning |
+|---|---|
+| `PSADMIN` | `host:port` of the PSF-HTTP API — the portal's only data source |
+| `PORT` | Express listen port (default `8080`) |
+| `COOKIE_SECRET` | session signing key — changing it invalidates every session |
+| `TRUST_PROXY` | set when running behind a reverse proxy |
+| `POP_CACHE_MINUTES` | how long population figures are cached |
 
-```
-psql psforever < db/schema.sql
-```
+Without `PSADMIN` the portal still starts and serves the SPA, but every data-backed page is empty and
+nobody can sign in.
 
-Or the pgAdmin's "Query Tool" interface.
+**Never commit your `.env`.** It is gitignored.
 
 ### Running
 
-Before running, you will need to create a `.env` file in the root of the project like this:
-
-```
-PGUSER=your_database_user
-PGHOST=localhost
-PGPASSWORD=your_database_user_password
-PSADMIN="127.0.0.1:51002"
-PGDATABASE=psforever
-PGPORT=5432
-COOKIE_SECRET=make_this_very_long_and_random
-```
-
-**Never** share/release/commit your `.env` file.
-
-Now run the following command:
-
-```
-# Will start the backend server (:8080) and webpack
+```bash
 npm run dev
 ```
 
-You should see similar output:
-```
-> psfportal@1.0.0 dev /home/chord/PSFPortal
-> concurrently --kill-others "npm run dev-server" "npm run webpack"
+That runs the Vite dev server and the Express API side by side. **Open http://localhost:5173** — Vite
+proxies `/api` through to Express on `:8080`.
 
-[1]
-[1] > psfportal@1.0.0 webpack /home/chord/PSFPortal
-[1] > webpack-dev-server --history-api-fallback --config webpack.config.cjs --content-base public
-[1]
-[0]
-[0] > psfportal@1.0.0 dev-server /home/chord/PSFPortal
-[0] > nodemon -w api/ -w index.js
-[0]
-[0] [nodemon] 2.0.2
-[0] [nodemon] to restart at any time, enter `rs`
-[0] [nodemon] watching dir(s): api/**/* index.js
-[0] [nodemon] watching extensions: js,mjs,json
-[0] [nodemon] starting `node index.js`
-[0] (node:16193) ExperimentalWarning: The ESM module loader is experimental.
-[0] WARNING: development server simulated delay active
-[0] Trusting proxy
-[0] Connected to the psql database at localhost
-[0] Starting PSAdmin polling for 127.0.0.1:51002
-[0] [MODE development] PSFWeb now accepting requests at http://localhost:8080/
-[1] ℹ ｢wds｣: Project is running at http://dev.psforever.net:8081/
-[1] ℹ ｢wds｣: webpack output is served from /
-[1] ℹ ｢wds｣: Content not from webpack is served from /home/chord/PSFPortal/public
-[1] ℹ ｢wds｣: 404s will fallback to /index.html
-[1] ℹ ｢wdm｣: Hash: 72b56958125b6abdf96c
-[1] Version: webpack 4.41.5
-[1] Time: 4493ms
-[1] Built at: 05/12/2020 11:44:23 PM
-[1]         Asset      Size  Chunks                   Chunk Names
-[1]     bundle.js   2.1 MiB  bundle  [emitted]        bundle
-[1] bundle.js.map  2.23 MiB  bundle  [emitted] [dev]  bundle
-[1] Entrypoint bundle = bundle.js bundle.js.map
-[1] [1] multi (webpack)-dev-server/client?http://dev.psforever.net:8081 ./app/main.js 40 bytes {bundle} [built]
-[1] [./app/App.svelte] 14.5 KiB {bundle} [built]
-<snip>
-[1] ℹ ｢wdm｣: Compiled successfully.
-> psfportal@1.0.0 dev-server
-> nodemon -w api/ -w index.js
+Other scripts:
 
-[nodemon] 2.0.2
-[nodemon] to restart at any time, enter `rs`
-[nodemon] watching dir(s): api/**/* index.js
-[nodemon] watching extensions: js,mjs,json
-[nodemon] starting `node index.js`
-(node:25327) ExperimentalWarning: The ESM module loader is experimental.
-WARNING: development server simulated delay active
-Connected to the psql database at localhost
-[MODE development] PSFWeb now accepting requests at http://localhost:8080/
-```
+| | |
+|---|---|
+| `npm run build` | build the SPA into `public/` |
+| `npm run production` | build, then serve everything from Express alone |
+| `npm run typecheck` | type-check both the client and the server (`tsc --noEmit`) |
 
-Please note that Webpack (dev) will proxy all API requests (/api) to the host `http://localhost:8080` (see the `devServer` key in [webpack.config.cjs](webpack.config.cjs)). This MUST match your backend server's (dev-server) listening port, which is by default 8080.
+Register an account, then make it a GM: `UPDATE accounts SET gm = true WHERE id = <your_id>;`
 
-**Finally, connect to http://localhost:8081** (webpack, not the raw express server)
+### Docker
 
-Register an account to start and grant it GM privileges using `UPDATE accounts SET gm=true WHERE id=your_id`.
+The `Dockerfile` builds the SPA and runs the Express server in one image, listening on `8080`. It is
+built alongside the login server stack; see that repository's `docker-compose.yml`.
 
-### Troubleshooting
+---
 
-1. Database SELECT/INSERTs are failing, but I can connect to the DB
-
-Make sure you have granted the right permissions to your DB user.
+## Layout
 
 ```
-GRANT ALL PRIVILEGES ON DATABASE user TO dbname;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO user;
+index.ts              Express entry point — sessions, static SPA, mounts /api
+api/                  API routes and data access
+  db.ts                 client for the login server's data endpoints (no SQL, despite the name)
+  psadmin.ts            HTTP client for the PSF-HTTP API
+  session-store.ts      express-session store backed by that same API
+  authentication.ts     register / login / logout
+  user.ts  me.ts        the signed-in account and its own characters
+  stats.ts  info.ts     leaderboards, weapon stats, server status
+  continents.ts         live world state and every GM action
+  admin.ts              account and role administration
+  inventory.ts          decodes the login server's locker/loadout blobs
+  util.ts               pagination, sorting, filtering, NEED_SESSION/NEED_ADMIN gates
+src/                  React SPA
+  pages/                one file per route; admin/ and me/ hold their sections
+  components/           shared UI, continent map, inventory icons
+  lib/                  API client, item shapes, exosuit and trunk geometry
+  styles/globals.css    Tailwind v4 entry and the PlanetSide palette
+static/               assets copied verbatim into the build
+  continents/           generated continent geometry and facility placements
+scripts/              generators (see below)
+data/                 client-derived item table — see docs/client-assets.md
+public/               Vite build output (gitignored)
 ```
 
-2. `[HPM] Error occurred while trying to proxy request /api/stats from localhost:8080 to http://localhost:8080`
+### Generated data
 
-Your Webpack instance is listening on 8080, when it should be listening on 8081 and proxying to the express server at 8080. Make sure to run `npm run dev-server` first and make sure it ran properly.
+**Continents** (`static/continents/`) — terrain silhouettes and facility placements, built from
+raxicore-editor's terrain export plus PSF-LoginServer's zonemaps:
 
-3. `Error: Cannot find package 'bcrypt'`
+```bash
+node scripts/build-continents.mjs --terrain <dir> --zonemaps <PSF zonemaps dir>
+```
 
-The `bcrypt` package has native dependencies that must match your Node version. If you upgrade Node, they will be outdated. To fix this, you need to remove your `node_modules/` directory and run `npm install` again to kick off another native build of this dependency.
+Regenerate when the map data or the zonemaps change. Ownership is *not* baked in — it is fetched live.
 
-## Production Running/Building
-Follow the same steps as above, but instead run `npm run production` at the very end.
+**Item names and artwork** (`data/`, `src/lib/itemShapes.json`) — derived from a PlanetSide client
+installation. See **[docs/client-assets.md](docs/client-assets.md)** for what is committed, what is
+deliberately not, and how to regenerate it. Nothing here downloads or redistributes a client, and the
+portal degrades gracefully without any of it: item names fall back to internal object names and the
+inventory grid to plain tiles, so a clean clone builds and runs with no extra steps.
+
+---
+
+## The data layer
+
+`api/db.ts` keeps its name and its exported function names, but issues no SQL. Each function is now a
+call to a `/portal/*` endpoint on the login server, implemented in
+`net.psforever.actors.api.PortalQueries`. The SQL moved across verbatim — same statements, same result
+shapes — so responses did not change and the route modules did not have to move with it.
+
+Three things are deliberately different on the far side:
+
+- **Redaction happens at the source.** `passhash` and `password` are never selected at all, and a
+  login's IP address is cut to its last two octets before it leaves the login server. The portal used
+  to fetch both in full and strip them afterwards.
+- **Sort and filter are whitelisted twice.** They travel as plain tokens; the login server matches each
+  against its own list and falls back to a default rather than letting one near a statement.
+- **Facility ownership comes from the live world**, not the `building` table — see `/zones/control`.
+
+Sessions work the same way. `api/session-store.ts` is an `express-session` store whose backend is the
+API rather than `connect-pg-simple`; that was the last thing keeping a connection pool in this process.
+Session reads fail soft (an unreachable API means "signed out", not an error page); writes do not.
+
+---
+
+## Troubleshooting
+
+**`/api` requests 404 or proxy-error in development.** Vite serves the app on `5173` and proxies
+`/api` to Express on `8080`. Open `5173`, not `8080`, and make sure the API actually started —
+`npm run dev` runs both, and kills both if either dies.
+
+**Every page is empty and login fails.** The login server is down or `PSADMIN` is wrong. The portal
+has no data of its own to fall back on. `connect_to_db()` logs what it found at startup — check that
+line first.
+
+**Item names show as `r_shotgun` and inventory tiles are blank.** Expected on a clean clone — the
+client-derived assets are not committed. See [docs/client-assets.md](docs/client-assets.md).
+
+---
+
+## License
+
+GPL-3.0-or-later.
