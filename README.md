@@ -68,6 +68,11 @@ PGPORT=5432
 COOKIE_SECRET=make_this_very_long_and_random
 ```
 
+`PSADMIN` is the `host:port` of the login server's public PSF-HTTP API (`api.public` in its
+configuration), which the portal polls for the online player list. It needs a login server that
+serves that API; older servers spoke a raw-TCP protocol on the same port, which this portal no
+longer uses.
+
 **Never** share/release/commit your `.env` file.
 
 Now run the following command:
