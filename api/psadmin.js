@@ -1,4 +1,4 @@
-import net from 'net'
+import http from 'http'
 
 let error_count = 0;
 let server_info = {}
@@ -53,31 +53,47 @@ export function get_server_info() {
 	return server_info;
 }
 
+// The login server's PSF-HTTP API. `/v1/players` answers with the same JSON the raw-TCP PSAdmin
+// `list_players` command did, so only the transport changes here.
+const REQUEST_TIMEOUT_MS = 5000;
+
 async function get_player_list() {
 	return new Promise((resolve, reject) => {
-		const client = new net.Socket();
-
-		client.connect(psadmin_port, psadmin_domain, function() {
-			client.write('list_players\n');
+		const req = http.get({
+			host: psadmin_domain,
+			port: psadmin_port,
+			path: '/v1/players',
+			headers: { 'Accept': 'application/json' },
+		}, (res) => {
+			let body = '';
+			res.setEncoding('utf8');
+			res.on('data', (chunk) => { body += chunk; });
+			// A connection dropped mid-response (the login server restarting) is reported here; without
+			// this listener it would be an uncaught exception that stops the portal.
+			res.on('error', reject);
+			res.on('end', () => {
+				if (res.statusCode !== 200) {
+					reject(new Error("PSF-HTTP API answered " + res.statusCode));
+					return;
+				}
+				let info;
+				try {
+					info = JSON.parse(body);
+				} catch (e) {
+					reject(new Error("Failed to parse PSF-HTTP API JSON response"));
+					return;
+				}
+				if (!Array.isArray(info.player_list)) {
+					reject(new Error("PSF-HTTP API response has no player_list"));
+					return;
+				}
+				resolve(info.player_list);
+			});
 		});
 
-		client.on('error', function(e) {
-			reject(e)
-			client.destroy()
-		});
-
-		client.on('data', function(data) {
-			try {
-				const info = JSON.parse(data);
-				resolve(info.player_list)
-			} catch (e) {
-				reject(new Error("Failed to parse PSFCI JSON response"))
-			} finally {
-				client.destroy(); // kill client after server's response
-			}
-		});
-
-		client.on('close', function() {
-		});
+		// A deadline for the whole exchange, not just for a quiet socket.
+		const timer = setTimeout(() => req.destroy(new Error("PSF-HTTP API request timed out")), REQUEST_TIMEOUT_MS);
+		req.on('close', () => clearTimeout(timer));
+		req.on('error', reject);
 	});
 }
